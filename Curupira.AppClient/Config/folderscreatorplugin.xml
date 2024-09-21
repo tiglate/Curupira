@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<plugin xmlns="http://curupira.org/plugin/folderscreator"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://curupira.org/plugin/folderscreator folderscreatorplugin.xsd">
+  <directories>
+    <add>C:\myapp\bin</add>
+    <add>C:\myapp\backup\logs</add>
+    <add>C:\myapp\other</add>
+    <add>\\192.168.1.1\daniel\folder\newfolder</add>
+  </directories>
+</plugin>
