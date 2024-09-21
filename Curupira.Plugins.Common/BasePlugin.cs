@@ -1,24 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Xml;
 using Curupira.Plugins.Contract;
 
 namespace Curupira.Plugins.Common
 {
-    public abstract class BasePlugin : IPlugin
+    public abstract class BasePlugin<TPluginConfig> : IPlugin
+        where TPluginConfig : class
     {
         protected ILogProvider Logger { get; }
+        private readonly IPluginConfigParser<TPluginConfig> _configParser;
 
-        protected BasePlugin(string pluginName, ILogProvider logger)
+        protected BasePlugin(string pluginName, ILogProvider logger, IPluginConfigParser<TPluginConfig> configParser)
         {
-            Name = pluginName;
+            Name = pluginName ?? throw new ArgumentNullException(nameof(pluginName));
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _configParser = configParser ?? throw new ArgumentNullException(nameof(configParser));
         }
 
-        public virtual string Name { get; private set; }
+        public virtual TPluginConfig Config { get; private set; }
 
-        public abstract void Init(XmlElement config);
+        public virtual string Name { get; private set; }
 
         public abstract bool Execute(IDictionary<string, string> commandLineArgs);
 
@@ -26,74 +29,41 @@ namespace Curupira.Plugins.Common
 
         public event EventHandler<PluginProgressEventArgs> Progress;
 
-        public IAsyncResult BeginExecute(IDictionary<string, string> commandLineArgs, AsyncCallback callback, object state)
+        public virtual void Init(XmlElement xmlConfig)
         {
-            Logger.Trace(FormatLogMessage(nameof(BeginExecute), "method called."));
+            Config = _configParser.Execute(xmlConfig);
+        }
 
-            var pluginAsyncResult = new PluginAsyncResult(false, state);
-            var thread = new Thread(obj =>
+        public async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
+        {
+            Logger.Trace(FormatLogMessage(nameof(ExecuteAsync), "method called."));
+
+            try
             {
-                var asyncResult = (PluginAsyncResult)obj;
-                try
-                {
-                    Logger.Debug(FormatLogMessage(nameof(BeginExecute), "Executing plugin logic on a separate thread."));
-                    bool result = Execute(commandLineArgs);
-                    asyncResult.Complete(result);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, FormatLogMessage(nameof(BeginExecute), "An error occurred during plugin execution."));
-                    asyncResult.Complete(ex);
-                }
-                finally
-                {
-                    callback?.Invoke(asyncResult);
-                }
-            });
-
-            thread.Start(pluginAsyncResult);
-            return pluginAsyncResult;
-        }
-
-        public bool EndExecute(IAsyncResult asyncResult)
-        {
-            Logger.Trace(FormatLogMessage(nameof(EndExecute), "method called."));
-            return ((PluginAsyncResult)asyncResult).Result;
-        }
-
-        public IAsyncResult BeginKill(AsyncCallback callback, object state)
-        {
-            Logger.Trace(FormatLogMessage(nameof(BeginKill), "method called."));
-
-            var executeAsyncResult = new PluginAsyncResult(false, state);
-            var thread = new Thread(obj =>
+                Logger.Debug(FormatLogMessage(nameof(ExecuteAsync), "Executing plugin logic."));
+                return await Task.Run(() => Execute(commandLineArgs));
+            }
+            catch (Exception ex)
             {
-                var asyncResult = (PluginAsyncResult)obj;
-                try
-                {
-                    Logger.Debug(FormatLogMessage(nameof(BeginKill), "Attempting to kill plugin on a separate thread."));
-                    bool result = Kill();
-                    asyncResult.Complete(result);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, FormatLogMessage(nameof(BeginKill), "An error occurred during plugin kill."));
-                    asyncResult.Complete(ex);
-                }
-                finally
-                {
-                    callback?.Invoke(asyncResult);
-                }
-            });
-
-            thread.Start(executeAsyncResult);
-            return executeAsyncResult;
+                Logger.Error(ex, FormatLogMessage(nameof(ExecuteAsync), "An error occurred during plugin execution."));
+                return false;
+            }
         }
 
-        public bool EndKill(IAsyncResult asyncResult)
+        public async Task<bool> KillAsync()
         {
-            Logger.Trace(FormatLogMessage(nameof(EndKill), "method called."));
-            return ((PluginAsyncResult)asyncResult).Result;
+            Logger.Trace(FormatLogMessage(nameof(KillAsync), "method called."));
+
+            try
+            {
+                Logger.Debug(FormatLogMessage(nameof(KillAsync), "Attempting to kill plugin."));
+                return await Task.Run(() => Kill());
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, FormatLogMessage(nameof(KillAsync), "An error occurred during plugin kill."));
+                return false;
+            }
         }
 
         protected virtual void OnProgress(PluginProgressEventArgs e)

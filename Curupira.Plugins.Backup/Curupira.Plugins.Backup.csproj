@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Curupira.Plugins.Backup</RootNamespace>
     <AssemblyName>Curupira.Plugins.Backup</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,17 +31,37 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression" />
+    <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BackupPackage.cs" />
+    <Compile Include="BackupPlugin.cs" />
+    <Compile Include="BackupPluginConfigParser.cs" />
+    <Compile Include="ConfigRecord.cs" />
+    <Compile Include="ConfigRecordBuilder.cs" />
+    <Compile Include="FileMatcher.cs" />
+    <Compile Include="BackupPluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Curupira.Plugins.Common\Curupira.Plugins.Common.csproj">
+      <Project>{085d9f87-cb58-4534-a247-d54c9a6e03b0}</Project>
+      <Name>Curupira.Plugins.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Curupira.Plugins.Contract\Curupira.Plugins.Contract.csproj">
+      <Project>{abfd97f5-058c-4516-9ea0-5c40f3cbfe83}</Project>
+      <Name>Curupira.Plugins.Contract</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

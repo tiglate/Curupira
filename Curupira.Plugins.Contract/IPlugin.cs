@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Xml;
 
 namespace Curupira.Plugins.Contract
@@ -17,52 +18,21 @@ namespace Curupira.Plugins.Contract
         /// <summary>
         /// Initializes the plug-in with configuration data from an XML element.
         /// </summary>
-        /// <param name="config">The XML element containing configuration data.</param>
-        void Init(XmlElement config);
+        /// <param name="xmlConfig">The XML element containing configuration data.</param>
+        void Init(XmlElement xmlConfig);
 
         /// <summary>
-        /// Executes the core functionality of the plug-in.
+        /// Asynchronously executes the core functionality of the plug-in.
         /// </summary>
         /// <param name="commandLineArgs">Additional parameters from the command line.</param>
-        /// <returns>True if execution was successful, false otherwise.</returns>
-        bool Execute(IDictionary<string, string> commandLineArgs);
+        /// <returns>A Task representing the asynchronous operation. The Task's result is true if execution was successful, false otherwise.</returns>
+        Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs);
 
         /// <summary>
-        /// Begins the asynchronous execution of the core functionality of the plug-in.
+        /// Asynchronously attempts to stop or kill the plug-in if it is stuck.
         /// </summary>
-        /// <param name="commandLineArgs">Additional parameters from the command line.</param>
-        /// <param name="callback">The AsyncCallback delegate to be called when the asynchronous operation completes.</param>
-        /// <param name="state">A user-defined object that qualifies or contains information about the asynchronous operation.</param>
-        /// <returns>An IAsyncResult that represents the asynchronous operation.</returns>
-        IAsyncResult BeginExecute(IDictionary<string, string> commandLineArgs, AsyncCallback callback, object state);
-
-        /// <summary>
-        /// Ends the asynchronous execution of the plug-in.
-        /// </summary>
-        /// <param name="asyncResult">The IAsyncResult returned by the call to BeginExecute.</param>
-        /// <returns>True if execution was successful, false otherwise.</returns>
-        bool EndExecute(IAsyncResult asyncResult);
-
-        /// <summary>
-        /// Attempts to stop or kill the plug-in if it is stuck.
-        /// </summary>
-        /// <returns>True if successful, false otherwise.</returns>
-        bool Kill();
-
-        /// <summary>
-        /// Begins the asynchronous attempt to stop or kill the plug-in if it is stuck.
-        /// </summary>
-        /// <param name="callback">The AsyncCallback delegate to be called when the asynchronous operation completes.</param>
-        /// <param name="state">A user-defined object that qualifies or contains information about the asynchronous operation.</param>
-        /// <returns>An IAsyncResult that represents the asynchronous operation.</returns>
-        IAsyncResult BeginKill(AsyncCallback callback, object state);
-
-        /// <summary>
-        /// Ends the asynchronous attempt to stop or kill the plug-in.
-        /// </summary>
-        /// <param name="asyncResult">The IAsyncResult returned by the call to BeginKill.</param>
-        /// <returns>True if successful, false otherwise.</returns>
-        bool EndKill(IAsyncResult asyncResult);
+        /// <returns>A Task representing the asynchronous operation. The Task's result is true if successful, false otherwise.</returns>
+        Task<bool> KillAsync();
 
         /// <summary>
         /// Event triggered to report the progress of the plug-in's execution.

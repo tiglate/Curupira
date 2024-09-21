@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Xml;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
 
@@ -13,33 +11,13 @@ namespace Curupira.Plugins.FoldersCreator
     /// <summary>
     /// Plugin to create a list of folders if they do not already exist.
     /// </summary>
-    public class FoldersCreatorPlugin : BasePlugin
+    public class FoldersCreatorPlugin : BasePlugin<FoldersCreatorPluginConfig>
     {
         private volatile bool _killed = false;
-        private readonly List<string> _directoriesToCreate = new List<string>();
 
-        public FoldersCreatorPlugin(ILogProvider logger) : base("Folders Creator Plugin", logger)
+        public FoldersCreatorPlugin(ILogProvider logger, IPluginConfigParser<FoldersCreatorPluginConfig> configParser)
+            : base("Folders Creator Plugin", logger, configParser)
         {
-        }
-
-        public override void Init(XmlElement config)
-        {
-            if (config == null)
-                throw new ArgumentNullException(nameof(config));
-
-            // Get the namespace URI from the XML document
-            string namespaceUri = config.NamespaceURI;
-
-            // Use the namespace URI directly in the XPath expression
-            XmlNodeList directoryNodes = config.SelectNodes("//*[local-name()='add' and namespace-uri()='" + namespaceUri + "']");
-
-            if (directoryNodes != null)
-            {
-                foreach (XmlNode directoryNode in directoryNodes)
-                {
-                    _directoriesToCreate.Add(SanitizeDiretoryNames(directoryNode.InnerText));
-                }
-            }
         }
 
         public override bool Execute(IDictionary<string, string> commandLineArgs)
@@ -48,10 +26,10 @@ namespace Curupira.Plugins.FoldersCreator
             var success = true;
             try
             {
-                int totalDirectories = _directoriesToCreate.Count;
+                int totalDirectories = Config.DirectoriesToCreate.Count;
                 int processedDirectories = 0;
 
-                foreach (string directoryPath in _directoriesToCreate)
+                foreach (string directoryPath in Config.DirectoriesToCreate)
                 {
                     if (_killed)
                     {
@@ -164,22 +142,6 @@ namespace Curupira.Plugins.FoldersCreator
                 Logger.Error(ex, "An error occurred while checking directory permissions.");
                 return false;
             }
-        }
-
-        private string SanitizeDiretoryNames(string dir)
-        {
-            if (dir.StartsWith("/"))
-            {
-                var stackTrace = new StackTrace();
-                var frame = stackTrace.GetFrame(1);
-                Logger.Fatal(FormatLogMessage(frame.GetMethod().Name, $"Linux directories are not supported! Invalid directory {dir}"));
-                throw new NotSupportedException("Linux directories are not supported!");
-            }
-            if (dir.Contains("/")) //Why use it in Windows?
-            {
-                dir = dir.Replace('/', '\\');
-            }
-            return dir;
         }
 
         public override void Dispose()
