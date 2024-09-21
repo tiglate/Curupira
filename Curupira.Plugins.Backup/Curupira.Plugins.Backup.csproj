@@ -44,11 +44,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BackupPackage.cs" />
+    <Compile Include="BackupArchive.cs" />
     <Compile Include="BackupPlugin.cs" />
     <Compile Include="BackupPluginConfigParser.cs" />
-    <Compile Include="ConfigRecord.cs" />
-    <Compile Include="ConfigRecordBuilder.cs" />
     <Compile Include="FileMatcher.cs" />
     <Compile Include="BackupPluginConfig.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

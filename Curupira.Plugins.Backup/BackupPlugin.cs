@@ -22,7 +22,7 @@ namespace Curupira.Plugins.Backup
             _killed = false;
             try
             {
-                foreach (var backupPackage in Config.Packages)
+                foreach (var archive in Config.Archives)
                 {
                     if (_killed)
                     {
@@ -30,19 +30,19 @@ namespace Curupira.Plugins.Backup
                         return false;
                     }
 
-                    string zipFileName = $"{DateTime.Now:yyyyMMddhhmmss}-{backupPackage.Id}.zip";
+                    string zipFileName = $"{DateTime.Now:yyyyMMddhhmmss}-{archive.Id}.zip";
                     string zipFilePath = Path.Combine(Config.Destination, zipFileName);
 
                     // Enforce backup limit if specified
-                    EnforceBackupLimit(backupPackage.Id);
+                    EnforceBackupLimit(archive.Id);
 
                     using (var zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
                     {
                         // Add files and directories to the zip archive
-                        AddItemsToZip(zipArchive, backupPackage);
+                        AddItemsToZip(zipArchive, archive);
                     }
 
-                    Logger.Info($"Backup '{backupPackage.Id}' created successfully at '{zipFilePath}'.");
+                    Logger.Info($"Backup '{archive.Id}' created successfully at '{zipFilePath}'.");
                 }
 
                 return true;
@@ -65,55 +65,22 @@ namespace Curupira.Plugins.Backup
             // This plugin doesn't have any resources to dispose.
         }
 
-        private void AddItemsToZip(ZipArchive zipArchive, BackupPackage backupPackage)
+        private void AddItemsToZip(ZipArchive zipArchive, BackupArchive backupArchive)
         {
-            // If there are no 'add' items, add the entire root directory (except for removed items)
-            if (backupPackage.AddItems.Count == 0)
+            var toBeAddedList = GetFilesToBeAddedToZip(backupArchive);
+            var totalEntries = toBeAddedList.Count;
+            var processedEntries = 0;
+
+            foreach (string itemPath in toBeAddedList)
             {
-                foreach (string itemPath in GetFilesToBeAddedToZip(backupPackage))
+                if (_killed)
                 {
-                    AddItemToZip(zipArchive, itemPath, backupPackage.Root);
+                    break;
                 }
-            }
-            else // If there are 'add' items, process them 
-            {
-                //foreach (string pattern in backupPackage.AddItems)
-                //{
-                //    string fullPathPattern = Path.Combine(backupPackage.Root, pattern);
-                //    foreach (string itemPath in GetMatchingItems(fullPathPattern))
-                //    {
-                //        if (!backupPackage.RemoveItems.Any(removeItem =>
-                //            MatchesPattern(itemPath, Path.Combine(backupPackage.Root, removeItem))))
-                //        {
-                //            AddItemToZip(zipArchive, itemPath, backupPackage.Root);
-                //        }
-                //    }
-                //}
-            }
-        }
-
-        private IList<string> GetFilesToBeAddedToZip(BackupPackage backupPackage)
-        {
-            var filesList = new List<string>();
-            var matcher = new FileMatcher(backupPackage.Root, backupPackage.RemoveItems);
-            GetFilesToBeAddedToZip(new DirectoryInfo(backupPackage.Root), filesList, matcher);
-            return filesList;
-        }
-
-        private void GetFilesToBeAddedToZip(DirectoryInfo directory, List<string> filesList, FileMatcher matcher)
-        {
-            filesList.AddRange(
-                directory
-                    .GetFiles()
-                    .Where(file => !matcher.IsMatch(file.FullName))
-                    .Select(file => file.FullName));
-
-            foreach (var subdirectory in directory.GetDirectories())
-            {
-                if (!matcher.IsMatch(subdirectory.FullName))
-                {
-                    GetFilesToBeAddedToZip(subdirectory, filesList, matcher);
-                }
+                AddItemToZip(zipArchive, itemPath, backupArchive.Root);
+                processedEntries++;
+                int percentage = (int)((double)processedEntries / totalEntries * 100);
+                OnProgress(new PluginProgressEventArgs(percentage, $"Archive: {backupArchive.Id}. Processed {processedEntries} of {totalEntries} directories"));
             }
         }
 
@@ -129,11 +96,37 @@ namespace Curupira.Plugins.Backup
             else if (Directory.Exists(itemPath))
             {
                 zipArchive.CreateEntry(entryName + "/"); // Create a directory entry
-                foreach (string filePath in Directory.EnumerateFiles(itemPath, "*", SearchOption.AllDirectories))
-                {
-                    AddItemToZip(zipArchive, filePath, rootPath);
-                }
                 Logger.Debug($"Added directory to zip: {entryName}");
+            }
+        }
+
+        private IList<string> GetFilesToBeAddedToZip(BackupArchive archive)
+        {
+            var filesList = new List<string>();
+            var matcher = new FileMatcher(archive.Root, archive.Exclusions);
+            GetFilesToBeAddedToZip(new DirectoryInfo(archive.Root), filesList, matcher);
+            return filesList;
+        }
+
+        private void GetFilesToBeAddedToZip(DirectoryInfo directory, List<string> filesList, FileMatcher matcher)
+        {
+            if (_killed)
+            {
+                return;
+            }
+            filesList.AddRange(
+                directory
+                    .GetFiles()
+                    .Where(file => !matcher.IsMatch(file.FullName))
+                    .Select(file => file.FullName));
+
+            foreach (var subdirectory in directory.GetDirectories())
+            {
+                if (!matcher.IsMatch(subdirectory.FullName))
+                {
+                    filesList.Add(subdirectory.FullName);
+                    GetFilesToBeAddedToZip(subdirectory, filesList, matcher);
+                }
             }
         }
 

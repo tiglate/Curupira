@@ -13,7 +13,7 @@
       -->
       <remove>bin</remove>
       <remove>etc\ssl\certs</remove>
-      <remove>lib</remove>
+      
       <remove>include</remove>
       <remove>*.txt</remove>
       <remove>msys64</remove>
@@ -23,12 +23,9 @@
       <remove>unins000.exe</remove>
     </backup>
     <backup id="dell" root="C:\Dell\Drivers\HFVP5\EULA">
-      <add>*.txt</add>
     </backup>
-    <backup id="xampp" root="C:\xampp">
-      <add>*.bat</add>
-      <add>licenses\fonts</add>
-      <remove>licenses\fonts\ps</remove>
+    <backup id="xampp" root="C:\xampp\cgi-bin">
+      <remove>*.pl</remove>
     </backup>
   </backups>
 </plugin>

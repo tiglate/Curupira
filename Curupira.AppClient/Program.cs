@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Threading.Tasks;
 using System.Xml;
@@ -7,33 +8,66 @@ using Curupira.Plugins.Backup;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
 using Curupira.Plugins.FoldersCreator;
+using NLog;
+using ShellProgressBar;
 
 namespace Curupira.AppClient
 {
     class Program
     {
-        private static readonly NLog.Logger Logger = NLog.LogManager.GetCurrentClassLogger();
-        
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private static ProgressBar progressBar;
+
+        static Program()
+        {
+            progressBar = new ProgressBar(10000, "Loading");
+        }
+
         static void Main(string[] args)
         {
-            //var toBeRemoved = "\\*.bat";
-            //var startOfFileExtension = toBeRemoved.IndexOf("*.");
-            //var fileExtension = toBeRemoved.Substring(startOfFileExtension + 1);
-            //var restOfThePath = toBeRemoved.Substring(0, startOfFileExtension);
-            //Console.WriteLine(startOfFileExtension);
-            //Console.WriteLine(fileExtension);
-            //Console.WriteLine(restOfThePath);
-            //Console.Write("Press any key to continue...");
-            //Console.ReadKey();
-
+            ApplyLogLevel();
             //return;
-            TestFolderCreation().Wait();
+            //TestFolderCreation().Wait();
             TestBackup().Wait();
-            NLog.LogManager.Shutdown();
+            LogManager.Shutdown();
             Console.Write("Press any key to continue...");
             Console.ReadKey();
         }
 
+        private static void ApplyLogLevel()
+        {
+            string logLevelSetting = ConfigurationManager.AppSettings["LogLevel"];
+
+            LogLevel logLevel;
+            switch (logLevelSetting?.ToUpper())
+            {
+                case "TRACE":
+                    logLevel = LogLevel.Trace;
+                    break;
+                case "DEBUG":
+                    logLevel = LogLevel.Debug;
+                    break;
+                case "INFO":
+                    logLevel = LogLevel.Info;
+                    break;
+                case "WARN":
+                    logLevel = LogLevel.Warn;
+                    break;
+                case "ERROR":
+                    logLevel = LogLevel.Error;
+                    break;
+                case "FATAL":
+                    logLevel = LogLevel.Fatal;
+                    break;
+                default:
+                    logLevel = LogLevel.Info; // Default to Info level if not specified or invalid
+                    break;
+            }
+
+            var config = LogManager.Configuration;
+            var consoleRule = config.FindRuleByName("consoleRule");
+            consoleRule?.SetLoggingLevels(logLevel, LogLevel.Fatal);
+        }
 
         private static async Task TestBackup()
         {
@@ -81,11 +115,15 @@ namespace Curupira.AppClient
             where TPluginConfigParser : IPluginConfigParser<TPluginConfig>, new()
         {
             var plugin = (TPlugin)Activator.CreateInstance(typeof(TPlugin), new NLogProvider(), new TPluginConfigParser());
+            progressBar.Message = $"Loading plugin: {plugin.Name}";
             plugin.Init(ReadConfigFile(configFile));
             plugin.Progress += (sender, e) =>
             {
-                Console.WriteLine($"Progress: {e.Percentage}% - {e.Message}");
+                progressBar.Message = e.Message;
+                var progress = progressBar.AsProgress<float>();
+                progress.Report(e.Percentage / 100f);
             };
+
             return plugin;
         }
 

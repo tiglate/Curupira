@@ -45,19 +45,14 @@ namespace Curupira.Plugins.Backup
                     if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(root))
                         throw new InvalidOperationException("Missing or empty 'id' or 'root' attribute in a backup element.");
 
-                    var backupPackage = new BackupPackage(id, root);
-
-                    foreach (XmlNode addNode in backupNode.SelectNodes("*[local-name()='add' and namespace-uri()='" + namespaceUri + "']"))
-                    {
-                        backupPackage.AddItems.Add(addNode.InnerText.TrimEnd('\\', '/'));
-                    }
+                    var archive = new BackupArchive(id, root);
 
                     foreach (XmlNode removeNode in backupNode.SelectNodes("*[local-name()='remove' and namespace-uri()='" + namespaceUri + "']"))
                     {
-                        backupPackage.RemoveItems.Add(removeNode.InnerText.TrimEnd('\\', '/'));
+                        archive.Exclusions.Add(removeNode.InnerText.TrimEnd('\\', '/'));
                     }
 
-                    pluginConfig.Packages.Add(backupPackage);
+                    pluginConfig.Archives.Add(archive);
                 }
             }
 

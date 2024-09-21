@@ -68,7 +68,7 @@ namespace Curupira.Plugins.Common
 
         protected virtual void OnProgress(PluginProgressEventArgs e)
         {
-            Logger.Info(FormatLogMessage(nameof(OnProgress), $"Progress: {e.Percentage}% - {e.Message}"));
+            Logger.Debug(FormatLogMessage(nameof(OnProgress), $"Progress: {e.Percentage}% - {e.Message}"));
             Progress?.Invoke(this, e);
         }
 

@@ -8,11 +8,11 @@ namespace Curupira.Plugins.Backup
 
         public int Limit { get; set; }
 
-        public IList<BackupPackage> Packages { get; private set; }
+        public IList<BackupArchive> Archives { get; private set; }
 
         public BackupPluginConfig()
         {
-            Packages = new List<BackupPackage>();
+            Archives = new List<BackupArchive>();
         }
     }
 }
