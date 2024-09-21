@@ -22,10 +22,12 @@ namespace Curupira.Plugins.Backup
 
         private BackupPluginConfig Execute(XmlElement xmlConfig)
         {
-            var pluginConfig = new BackupPluginConfig();
-
             if (xmlConfig == null)
+            {
                 throw new ArgumentNullException(nameof(xmlConfig));
+            }
+
+            var pluginConfig = new BackupPluginConfig();
 
             // Get the namespace URI from the XML document
             string namespaceUri = xmlConfig.NamespaceURI;

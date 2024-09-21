@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.Common", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.Backup", "Curupira.Plugins.Backup\Curupira.Plugins.Backup.csproj", "{D46FC68F-4501-45D4-BBE5-56E44FD6FECB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.ServiceManager", "Curupira.Plugins.ServiceManager\Curupira.Plugins.ServiceManager.csproj", "{B6793103-4F09-47BF-AB2B-DF02A8DA8CA5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{D46FC68F-4501-45D4-BBE5-56E44FD6FECB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D46FC68F-4501-45D4-BBE5-56E44FD6FECB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D46FC68F-4501-45D4-BBE5-56E44FD6FECB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B6793103-4F09-47BF-AB2B-DF02A8DA8CA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B6793103-4F09-47BF-AB2B-DF02A8DA8CA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B6793103-4F09-47BF-AB2B-DF02A8DA8CA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B6793103-4F09-47BF-AB2B-DF02A8DA8CA5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -22,10 +22,12 @@ namespace Curupira.Plugins.FoldersCreator
 
         private FoldersCreatorPluginConfig Execute(XmlElement xmlConfig)
         {
-            var pluginConfig = new FoldersCreatorPluginConfig();
-
             if (xmlConfig == null)
+            {
                 throw new ArgumentNullException(nameof(xmlConfig));
+            }
+
+            var pluginConfig = new FoldersCreatorPluginConfig();
 
             // Get the namespace URI from the XML document
             string namespaceUri = xmlConfig.NamespaceURI;

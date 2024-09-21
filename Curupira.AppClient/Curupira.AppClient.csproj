@@ -116,6 +116,9 @@
     <Content Include="Config\folders-creator-plugin.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Config\service-manager-plugin.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -124,6 +127,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Config\folders-creator-plugin.xsd">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Config\service-manager-plugin.xsd">
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -148,6 +155,10 @@
     <ProjectReference Include="..\Curupira.Plugins.FoldersCreator\Curupira.Plugins.FoldersCreator.csproj">
       <Project>{424f6d8e-7eec-46be-80d6-e637f56fa424}</Project>
       <Name>Curupira.Plugins.FoldersCreator</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Curupira.Plugins.ServiceManager\Curupira.Plugins.ServiceManager.csproj">
+      <Project>{b6793103-4f09-47bf-ab2b-df02a8da8ca5}</Project>
+      <Name>Curupira.Plugins.ServiceManager</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<plugin xmlns="http://curupira.org/plugin/service-manager-plugin"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://curupira.org/plugin/service-manager-plugin service-manager-plugin.xsd">
+    <bundles>
+        <bundle id="stop_all">
+            <service name="WSearch" action="Stop" />
+            <service name="wuauserv" action="Stop" />
+        </bundle>
+        <bundle id="start_all">
+            <service name="WSearch" action="Start" />
+            <service name="wuauserv" action="Start" />
+        </bundle>
+    </bundles>
+</plugin>
