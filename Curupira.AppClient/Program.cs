@@ -1,46 +1,59 @@
-﻿using System;
+﻿using Autofac;
+using CommandLine;
+using NLog;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.IO;
 using System.Threading.Tasks;
-using System.Xml;
-using Curupira.Plugins.Backup;
-using Curupira.Plugins.Common;
-using Curupira.Plugins.Contract;
-using Curupira.Plugins.FoldersCreator;
-using NLog;
-using ShellProgressBar;
 
 namespace Curupira.AppClient
 {
     class Program
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        private static ProgressBar progressBar;
-
-        static Program()
+        static async Task<int> Main(string[] args)
         {
-            progressBar = new ProgressBar(10000, "Loading");
+            var result = Parser.Default.ParseArguments<Options>(args);
+
+            return await result.MapResult(
+                async options => await RunApplicationAsync(options).ConfigureAwait(false),  // Successful parsing
+                errors => Task.FromResult(HandleParseError(errors))   // Error handling
+            ).ConfigureAwait(false);
         }
 
-        static void Main(string[] args)
+        private static async Task<int> RunApplicationAsync(Options options)
         {
-            ApplyLogLevel();
-            //return;
-            //TestFolderCreation().Wait();
-            TestBackup().Wait();
-            LogManager.Shutdown();
-            Console.Write("Press any key to continue...");
-            Console.ReadKey();
+            ApplyLogLevel(options.Level);
+
+            var container = Startup.ConfigureServices(options);
+            using (var scope = container.BeginLifetimeScope())
+            {
+                var pluginExecutor = scope.Resolve<IPluginExecutor>();
+                return await pluginExecutor.ExecutePluginAsync(options).ConfigureAwait(false) ? 0 : 1;
+            }
         }
 
-        private static void ApplyLogLevel()
+        private static int HandleParseError(IEnumerable<Error> errs)
         {
-            string logLevelSetting = ConfigurationManager.AppSettings["LogLevel"];
+            if (errs.IsHelp())
+            {
+                return 0; // Error code for success
+            }
+            Console.WriteLine("Use --help to view usage instructions.");
+            return 1; // Error code for failure
+        }
+
+        private static void ApplyLogLevel(string logLevelSetting)
+        {
+            logLevelSetting = !string.IsNullOrWhiteSpace(logLevelSetting)
+                ? logLevelSetting
+                : ConfigurationManager.AppSettings["LogLevel"];
 
             LogLevel logLevel;
             switch (logLevelSetting?.ToUpper())
             {
+                case "OFF":
+                    logLevel = LogLevel.Off;
+                    break;
                 case "TRACE":
                     logLevel = LogLevel.Trace;
                     break;
@@ -67,72 +80,6 @@ namespace Curupira.AppClient
             var config = LogManager.Configuration;
             var consoleRule = config.FindRuleByName("consoleRule");
             consoleRule?.SetLoggingLevels(logLevel, LogLevel.Fatal);
-        }
-
-        private static async Task TestBackup()
-        {
-            await TestPlugin<BackupPlugin, BackupPluginConfig, BackupPluginConfigParser>("backup-plugin.xml");
-        }
-
-        private static async Task TestFolderCreation()
-        {
-            await TestPlugin<FoldersCreatorPlugin, FoldersCreatorPluginConfig, FoldersCreatorPluginConfigParser>("folders-creator-plugin.xml");
-        }
-
-        private static async Task TestPlugin<TPlugin, TPluginConfig, TPluginConfigParser>(string configFile, IDictionary<string, string> commandLineArgs = null)
-            where TPlugin : IPlugin
-            where TPluginConfig : class
-            where TPluginConfigParser : IPluginConfigParser<TPluginConfig>, new()
-        {
-            if (commandLineArgs == null)
-            {
-                commandLineArgs = new Dictionary<string, string>();
-            }
-
-            try
-            {
-                var plugin = BuildPlugin<TPlugin, TPluginConfig, TPluginConfigParser>(configFile);
-                bool success = await plugin.ExecuteAsync(commandLineArgs);
-
-                if (success)
-                {
-                    Logger.Info("Plugin executed successfully!");
-                }
-                else
-                {
-                    Logger.Error("Plugin execution failed.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Fatal(ex, "A fatal error occurred in the application.");
-            }
-        }
-
-        private static TPlugin BuildPlugin<TPlugin, TPluginConfig, TPluginConfigParser>(string configFile)
-            where TPlugin : IPlugin
-            where TPluginConfig : class
-            where TPluginConfigParser : IPluginConfigParser<TPluginConfig>, new()
-        {
-            var plugin = (TPlugin)Activator.CreateInstance(typeof(TPlugin), new NLogProvider(), new TPluginConfigParser());
-            progressBar.Message = $"Loading plugin: {plugin.Name}";
-            plugin.Init(ReadConfigFile(configFile));
-            plugin.Progress += (sender, e) =>
-            {
-                progressBar.Message = e.Message;
-                var progress = progressBar.AsProgress<float>();
-                progress.Report(e.Percentage / 100f);
-            };
-
-            return plugin;
-        }
-
-        private static XmlElement ReadConfigFile(string configFile)
-        {
-            string configFilePath = Path.Combine(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config"), configFile);
-            XmlDocument configXml = new XmlDocument();
-            configXml.Load(configFilePath);
-            return configXml.DocumentElement;
         }
     }
 }

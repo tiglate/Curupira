@@ -10,10 +10,10 @@ namespace Curupira.Plugins.Backup
 {
     public class BackupPlugin : BasePlugin<BackupPluginConfig>
     {
-        private volatile bool _killed = false;
+        private volatile bool _killed;
 
         public BackupPlugin(ILogProvider logger, IPluginConfigParser<BackupPluginConfig> configParser)
-            : base("Backup Plugin", logger, configParser)
+            : base("BackupPlugin", logger, configParser)
         {
         }
 
@@ -95,7 +95,7 @@ namespace Curupira.Plugins.Backup
             }
             else if (Directory.Exists(itemPath))
             {
-                zipArchive.CreateEntry(entryName + "/"); // Create a directory entry
+                zipArchive.CreateEntry($"{entryName}/"); // Create a directory entry
                 Logger.Debug($"Added directory to zip: {entryName}");
             }
         }

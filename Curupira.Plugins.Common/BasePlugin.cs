@@ -29,9 +29,9 @@ namespace Curupira.Plugins.Common
 
         public event EventHandler<PluginProgressEventArgs> Progress;
 
-        public virtual void Init(XmlElement xmlConfig)
+        public virtual void Init()
         {
-            Config = _configParser.Execute(xmlConfig);
+            Config = _configParser.Execute();
         }
 
         public async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
@@ -41,7 +41,7 @@ namespace Curupira.Plugins.Common
             try
             {
                 Logger.Debug(FormatLogMessage(nameof(ExecuteAsync), "Executing plugin logic."));
-                return await Task.Run(() => Execute(commandLineArgs));
+                return await Task.Run(() => Execute(commandLineArgs)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -57,7 +57,7 @@ namespace Curupira.Plugins.Common
             try
             {
                 Logger.Debug(FormatLogMessage(nameof(KillAsync), "Attempting to kill plugin."));
-                return await Task.Run(() => Kill());
+                return await Task.Run(() => Kill()).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

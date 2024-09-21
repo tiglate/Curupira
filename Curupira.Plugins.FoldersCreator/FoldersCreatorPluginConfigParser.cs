@@ -6,7 +6,21 @@ namespace Curupira.Plugins.FoldersCreator
 {
     public class FoldersCreatorPluginConfigParser : IPluginConfigParser<FoldersCreatorPluginConfig>
     {
-        public FoldersCreatorPluginConfig Execute(XmlElement xmlConfig)
+        private readonly string _configFile;
+
+        public FoldersCreatorPluginConfigParser(string configFile)
+        {
+            _configFile = configFile;
+        }
+
+        public FoldersCreatorPluginConfig Execute()
+        {
+            var configXml = new XmlDocument();
+            configXml.Load(_configFile);
+            return Execute(configXml.DocumentElement);
+        }
+
+        private FoldersCreatorPluginConfig Execute(XmlElement xmlConfig)
         {
             var pluginConfig = new FoldersCreatorPluginConfig();
 
@@ -17,7 +31,7 @@ namespace Curupira.Plugins.FoldersCreator
             string namespaceUri = xmlConfig.NamespaceURI;
 
             // Use the namespace URI directly in the XPath expression
-            XmlNodeList directoryNodes = xmlConfig.SelectNodes("//*[local-name()='add' and namespace-uri()='" + namespaceUri + "']");
+            XmlNodeList directoryNodes = xmlConfig.SelectNodes($"//*[local-name()='add' and namespace-uri()='{namespaceUri}']");
 
             if (directoryNodes != null)
             {

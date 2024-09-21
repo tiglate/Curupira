@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace Curupira.Plugins.Contract
 {
@@ -16,10 +15,9 @@ namespace Curupira.Plugins.Contract
         string Name { get; }
 
         /// <summary>
-        /// Initializes the plug-in with configuration data from an XML element.
+        /// Plug-in initializes routines
         /// </summary>
-        /// <param name="xmlConfig">The XML element containing configuration data.</param>
-        void Init(XmlElement xmlConfig);
+        void Init();
 
         /// <summary>
         /// Asynchronously executes the core functionality of the plug-in.

@@ -6,7 +6,21 @@ namespace Curupira.Plugins.Backup
 {
     public class BackupPluginConfigParser : IPluginConfigParser<BackupPluginConfig>
     {
-        public BackupPluginConfig Execute(XmlElement xmlConfig)
+        private readonly string _configFile;
+
+        public BackupPluginConfigParser(string configFile)
+        {
+            _configFile = configFile;
+        }
+
+        public BackupPluginConfig Execute()
+        {
+            var configXml = new XmlDocument();
+            configXml.Load(_configFile);
+            return Execute(configXml.DocumentElement);
+        }
+
+        private BackupPluginConfig Execute(XmlElement xmlConfig)
         {
             var pluginConfig = new BackupPluginConfig();
 
@@ -17,7 +31,7 @@ namespace Curupira.Plugins.Backup
             string namespaceUri = xmlConfig.NamespaceURI;
 
             // Read settings
-            XmlNode settingsNode = xmlConfig.SelectSingleNode("//*[local-name()='settings' and namespace-uri()='" + namespaceUri + "']");
+            XmlNode settingsNode = xmlConfig.SelectSingleNode($"//*[local-name()='settings' and namespace-uri()='{namespaceUri}']");
             pluginConfig.Destination = settingsNode?.Attributes["destination"]?.Value;
             if (string.IsNullOrEmpty(pluginConfig.Destination))
             {
@@ -35,7 +49,7 @@ namespace Curupira.Plugins.Backup
             }
 
             // Read backup packages
-            XmlNodeList backupNodes = xmlConfig.SelectNodes("//*[local-name()='backups']/*[local-name()='backup' and namespace-uri()='" + namespaceUri + "']");
+            XmlNodeList backupNodes = xmlConfig.SelectNodes($"//*[local-name()='backups']/*[local-name()='backup' and namespace-uri()='{namespaceUri}']");
             if (backupNodes != null)
             {
                 foreach (XmlNode backupNode in backupNodes)
@@ -47,7 +61,7 @@ namespace Curupira.Plugins.Backup
 
                     var archive = new BackupArchive(id, root);
 
-                    foreach (XmlNode removeNode in backupNode.SelectNodes("*[local-name()='remove' and namespace-uri()='" + namespaceUri + "']"))
+                    foreach (XmlNode removeNode in backupNode.SelectNodes($"*[local-name()='remove' and namespace-uri()='{namespaceUri}']"))
                     {
                         archive.Exclusions.Add(removeNode.InnerText.TrimEnd('\\', '/'));
                     }

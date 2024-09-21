@@ -13,10 +13,10 @@ namespace Curupira.Plugins.FoldersCreator
     /// </summary>
     public class FoldersCreatorPlugin : BasePlugin<FoldersCreatorPluginConfig>
     {
-        private volatile bool _killed = false;
+        private volatile bool _killed;
 
         public FoldersCreatorPlugin(ILogProvider logger, IPluginConfigParser<FoldersCreatorPluginConfig> configParser)
-            : base("Folders Creator Plugin", logger, configParser)
+            : base("FoldersCreatorPlugin", logger, configParser)
         {
         }
 

@@ -12,7 +12,7 @@ namespace Curupira.Plugins.Backup
 
         public FileMatcher(string rootDir, IList<string> patterns)
         {
-            _rootDir = Path.GetFullPath(rootDir).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            _rootDir = $"{Path.GetFullPath(rootDir).TrimEnd(Path.DirectorySeparatorChar)}{Path.DirectorySeparatorChar}";
             _patterns = patterns.Select(p => p.ToLower().Replace('\\', Path.DirectorySeparatorChar)).ToList();
         }
 
@@ -75,7 +75,7 @@ namespace Curupira.Plugins.Backup
 
                 if (patternSegment.Contains("*"))
                 {
-                    // Handle wildcard patterns like *.txt or subfolder/*.txt
+                    // Handle wildcard patterns like *.txt or folder/*.txt
                     if (!WildcardMatch(pathSegment, patternSegment))
                     {
                         return false;
