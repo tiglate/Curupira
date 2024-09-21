@@ -69,7 +69,7 @@ namespace Curupira.AppClient
             }
             catch (Exception ex)
             {
-                _logProvider.Error(ex);
+                _logProvider.Error(ex, $"Error when executing the plugin '{options.Plugin}'");
                 return false;
             }
         }
