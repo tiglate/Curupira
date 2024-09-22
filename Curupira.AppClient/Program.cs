@@ -23,6 +23,7 @@ namespace Curupira.AppClient
         private static async Task<int> RunApplicationAsync(Options options)
         {
             ApplyLogLevel(options.Level);
+            ShowBanner();
 
             var container = Startup.ConfigureServices(options);
             using (var scope = container.BeginLifetimeScope())
@@ -80,6 +81,45 @@ namespace Curupira.AppClient
             var config = LogManager.Configuration;
             var consoleRule = config.FindRuleByName("consoleRule");
             consoleRule?.SetLoggingLevels(logLevel, LogLevel.Fatal);
+        }
+
+        private static void ShowBanner()
+        {
+            Console.Clear();
+            Console.WriteLine();
+            WriteCentered(@" ██████╗██╗   ██╗██████╗ ██╗   ██╗██████╗ ██╗██████╗  █████╗ ");
+            WriteCentered(@"██╔════╝██║   ██║██╔══██╗██║   ██║██╔══██╗██║██╔══██╗██╔══██╗");
+            WriteCentered(@"██║     ██║   ██║██████╔╝██║   ██║██████╔╝██║██████╔╝███████║");
+            WriteCentered(@"██║     ██║   ██║██╔══██╗██║   ██║██╔═══╝ ██║██╔══██╗██╔══██║");
+            WriteCentered(@"╚██████╗╚██████╔╝██║  ██║╚██████╔╝██║     ██║██║  ██║██║  ██║");
+            WriteCentered(@" ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝");
+            WriteCentered(@"                                                             ");
+            WriteCentered(" -=-=- Automation Tool -=-=-");
+            Console.WriteLine();
+        }
+
+        /// <summary>
+        /// Centers the given text within the console window.
+        /// </summary>
+        /// <param name="text">The text to center.</param>
+        public static void WriteCentered(string text, bool newLine = true)
+        {
+            // Get the console window width
+            int consoleWidth = Console.WindowWidth;
+
+            // Calculate the padding required on each side
+            int padding = (consoleWidth - text.Length) / 2;
+
+            // Write the padding and then the text
+            Console.Write(new string(' ', padding));
+            if (newLine)
+            {
+                Console.WriteLine(text);
+            }
+            else
+            {
+                Console.Write(text);
+            }
         }
     }
 }
