@@ -63,12 +63,12 @@ namespace Curupira.Plugins.Installer
                             sucess = sucess && auxSuccess;
                             break;
                         case ComponentType.Msi:
-                            auxSuccess = await HandleMsiComponentAsync(component);
+                            auxSuccess = await HandleMsiComponentAsync(component).ConfigureAwait(false);
                             sucess = sucess && auxSuccess;
                             break;
                         case ComponentType.Bat:
                         case ComponentType.Exe:
-                            auxSuccess = await HandleBatOrExeComponentAsync(component);
+                            auxSuccess = await HandleBatOrExeComponentAsync(component).ConfigureAwait(false);
                             sucess = sucess && auxSuccess;
                             break;
                         default:
@@ -178,7 +178,7 @@ namespace Curupira.Plugins.Installer
                 var outputTask = process.StandardOutput.ReadToEndAsync();
                 var errorTask = process.StandardError.ReadToEndAsync();
 
-                await Task.WhenAll(outputTask, errorTask);
+                await Task.WhenAll(outputTask, errorTask).ConfigureAwait(false);
 
                 string output = await outputTask;
                 string error = await errorTask;
@@ -229,7 +229,7 @@ namespace Curupira.Plugins.Installer
                 var outputTask = process.StandardOutput.ReadToEndAsync();
                 var errorTask = process.StandardError.ReadToEndAsync();
 
-                await Task.WhenAll(outputTask, errorTask);
+                await Task.WhenAll(outputTask, errorTask).ConfigureAwait(false);
 
                 string output = await outputTask;
                 string error = await errorTask;
