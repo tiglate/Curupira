@@ -28,7 +28,7 @@ namespace Curupira.Plugins.ServiceManager
             }
 
             // Check if the specified bundle exists
-            if (!Config.Bundles.TryGetValue(bundleId, out var serviceActions))
+            if (!Config.Bundles.TryGetValue(bundleId, out var bundle))
             {
                 Logger.Error($"Bundle '{bundleId}' not found in configuration.");
                 return false;
@@ -36,9 +36,9 @@ namespace Curupira.Plugins.ServiceManager
 
             var success = true;
             var processedServices = 0;
-            var totalServices = serviceActions.Count;
+            var totalServices = bundle.Services.Count;
 
-            foreach (var serviceAction in serviceActions)
+            foreach (var serviceAction in bundle.Services)
             {
                 if (_killed)
                 {
@@ -63,6 +63,10 @@ namespace Curupira.Plugins.ServiceManager
                                 break;
                             case ActionEnum.StopOrKill:
                                 auxSuccess = StopOrKillService(serviceAction, serviceController);
+                                success = success && auxSuccess;
+                                break;
+                            case ActionEnum.Status:
+                                auxSuccess = GetServiceStatus(bundle.LogFile, serviceController);
                                 success = success && auxSuccess;
                                 break;
                         }
@@ -146,6 +150,32 @@ namespace Curupira.Plugins.ServiceManager
                 Logger.Warn($"Service '{serviceAction.ServiceName}' is not running or cannot be stopped.");
             }
 
+            return true;
+        }
+
+        private bool GetServiceStatus(string logFile, ServiceController serviceController)
+        {
+            if (string.IsNullOrWhiteSpace(logFile))
+            {
+                Logger.Error($"To read the status of a service, you need to inform the logFile attribute of the bundle in the config file.");
+                return false;
+            }
+            try
+            {
+                var now = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
+                var statusLogEntry = $"[{now}] {serviceController.ServiceName}: {serviceController.Status}{Environment.NewLine}";
+                System.IO.File.AppendAllText(string.Format(logFile, DateTime.Now), statusLogEntry);
+            }
+            catch (System.IO.IOException ex)
+            {
+                Logger.Error(ex, $"Error trying save the status of the service '{serviceController.ServiceName}' into {logFile}.");
+                return false;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, $"Error trying to get the service '{serviceController.ServiceName}' status .");
+                return false;
+            }
             return true;
         }
 

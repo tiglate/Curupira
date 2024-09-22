@@ -11,5 +11,10 @@
             <service name="WSearch" action="Start" />
             <service name="wuauserv" action="Start" />
         </bundle>
+        <bundle id="status_test" logFile="c:\temp\{0:yyyy-MM-dd}-services.txt">
+            <service name="VSSERV" action="Status" />
+            <service name="W32Time" action="Status" />
+            <service name="WaaSMedicSvc" action="Status" />
+        </bundle>
     </bundles>
 </plugin>

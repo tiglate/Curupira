@@ -1,6 +1,5 @@
 ﻿using Curupira.Plugins.Contract;
 using System;
-using System.Collections.Generic;
 using System.Xml;
 
 namespace Curupira.Plugins.ServiceManager
@@ -30,11 +29,10 @@ namespace Curupira.Plugins.ServiceManager
 
             var pluginConfig = new ServiceManagerPluginConfig();
 
-            // Get the namespace URI from the XML document
             string namespaceUri = xmlConfig.NamespaceURI;
 
-            // Read service bundles
             XmlNodeList bundleNodes = xmlConfig.SelectNodes($"//*[local-name()='bundles']/*[local-name()='bundle' and namespace-uri()='{namespaceUri}']");
+
             if (bundleNodes != null)
             {
                 foreach (XmlNode bundleNode in bundleNodes)
@@ -45,9 +43,11 @@ namespace Curupira.Plugins.ServiceManager
                         throw new InvalidOperationException("Missing or empty 'id' attribute in a bundle element.");
                     }
 
-                    var serviceActions = new List<ServiceAction>();
+                    var bundle = new Bundle(bundleId)
+                    {
+                        LogFile = bundleNode.Attributes["logFile"]?.Value
+                    };
 
-                    // Use 'service' instead of 'services'
                     foreach (XmlNode serviceNode in bundleNode.SelectNodes($"*[local-name()='service' and namespace-uri()='{namespaceUri}']"))
                     {
                         string serviceName = serviceNode.Attributes["name"]?.Value;
@@ -63,10 +63,10 @@ namespace Curupira.Plugins.ServiceManager
                             throw new InvalidOperationException($"Invalid 'action' attribute value: {actionStr}. Valid values are: Start, Stop");
                         }
 
-                        serviceActions.Add(new ServiceAction { ServiceName = serviceName, Action = action });
+                        bundle.Services.Add(new ServiceAction(serviceName, action));
                     }
 
-                    pluginConfig.Bundles.Add(bundleId, serviceActions);
+                    pluginConfig.Bundles.Add(bundleId, bundle);
                 }
             }
             return pluginConfig;

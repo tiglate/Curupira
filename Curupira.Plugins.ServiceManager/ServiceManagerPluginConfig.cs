@@ -6,9 +6,9 @@ namespace Curupira.Plugins.ServiceManager
     {
         public ServiceManagerPluginConfig()
         {
-            Bundles = new Dictionary<string, IList<ServiceAction>>();
+            Bundles = new Dictionary<string, Bundle>();
         }
 
-        public IDictionary<string, IList<ServiceAction>> Bundles { get; private set; }
+        public IDictionary<string, Bundle> Bundles { get; private set; }
     }
 }

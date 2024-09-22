@@ -4,6 +4,7 @@
     {
         Start,
         Stop,
-        StopOrKill
+        StopOrKill,
+        Status
     }
 }

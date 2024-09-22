@@ -17,19 +17,21 @@
                                         <!-- One or more services required -->
                                         <xs:element name="service" maxOccurs="unbounded">
                                             <xs:complexType>
-                                                <xs:attribute name="name" type="xs:string" use="required"/>
+                                                <xs:attribute name="name" type="xs:string" use="required" />
                                                 <xs:attribute name="action" use="required">
                                                     <xs:simpleType>
                                                         <xs:restriction base="xs:string">
-                                                            <xs:enumeration value="Start"/>
-                                                            <xs:enumeration value="Stop"/>
+                                                            <xs:enumeration value="Start" />
+                                                            <xs:enumeration value="Stop" />
+                                                            <xs:enumeration value="Status" />
                                                         </xs:restriction>
                                                     </xs:simpleType>
                                                 </xs:attribute>
                                             </xs:complexType>
                                         </xs:element>
                                     </xs:sequence>
-                                    <xs:attribute name="id" type="xs:string" use="required"/>
+                                    <xs:attribute name="id" type="xs:string" use="required" />
+                                    <xs:attribute name="logFile" type="xs:string" />
                                 </xs:complexType>
                             </xs:element>
                         </xs:sequence>
