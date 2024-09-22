@@ -3,6 +3,7 @@ using Curupira.Plugins.Backup;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
 using Curupira.Plugins.FoldersCreator;
+using Curupira.Plugins.Installer;
 using Curupira.Plugins.ServiceManager;
 using System.IO;
 using System;
@@ -22,6 +23,7 @@ namespace Curupira.AppClient
             RegisterFoldersCreatorPlugin(builder);
             RegisterServiceManager(builder);
             RegisterBackupPlugin(builder);
+            RegisterInstallerPlugin(builder);
 
             builder.RegisterType<PluginExecutor>().As<IPluginExecutor>();
 
@@ -37,6 +39,17 @@ namespace Curupira.AppClient
 
             builder.RegisterType<BackupPlugin>()
                 .Named<IPlugin>("BackupPlugin");
+        }
+
+        private static void RegisterInstallerPlugin(ContainerBuilder builder)
+        {
+            builder.RegisterType<InstallerPluginConfigParser>()
+                .As<IPluginConfigParser<InstallerPluginConfig>>()
+                .WithParameter("configFile", Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config", "Installer-plugin.xml"))
+                .SingleInstance();
+
+            builder.RegisterType<InstallerPlugin>()
+                .Named<IPlugin>("InstallerPlugin");
         }
 
         private static void RegisterServiceManager(ContainerBuilder builder)

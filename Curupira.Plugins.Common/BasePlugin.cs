@@ -34,7 +34,7 @@ namespace Curupira.Plugins.Common
             Config = _configParser.Execute();
         }
 
-        public async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
+        public virtual async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
         {
             Logger.Trace(FormatLogMessage(nameof(ExecuteAsync), "method called."));
 
@@ -50,7 +50,7 @@ namespace Curupira.Plugins.Common
             }
         }
 
-        public async Task<bool> KillAsync()
+        public virtual async Task<bool> KillAsync()
         {
             Logger.Trace(FormatLogMessage(nameof(KillAsync), "method called."));
 

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="http://curupira.org/plugin/service-manager-plugin"
-           xmlns="http://curupira.org/plugin/service-manager-plugin"
+           targetNamespace="http://ampliar.dev.br/projects/curupira/plugin/service-manager-plugin"
+           xmlns="http://ampliar.dev.br/projects/curupira/plugin/service-manager-plugin"
            elementFormDefault="qualified"
            attributeFormDefault="unqualified">
     <xs:element name="plugin">

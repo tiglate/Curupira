@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Curupira Automation Tool")]
+[assembly: AssemblyTitle("Curupira.Plugins.Installer")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Ampliar")]
-[assembly: AssemblyProduct("Curupira Automation Tool")]
-[assembly: AssemblyCopyright("Copyright © 2024 Ampliar")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Curupira.Plugins.Installer")]
+[assembly: AssemblyCopyright("Copyright ©  2024")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("01fec164-ea0b-4947-be52-d4ab9ec414e8")]
+[assembly: Guid("5ad1561a-8d9f-4087-bd72-7e33f0e68f54")]
 
 // Version information for an assembly consists of the following four values:
 //

@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8" ?>
-<plugin xmlns="http://curupira.org/plugin/backup-plugin"
+<plugin xmlns="http://ampliar.dev.br/projects/curupira/plugin/backup-plugin"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://curupira.org/plugin/backup-plugin backup-plugin.xsd">
+        xsi:schemaLocation="http://ampliar.dev.br/projects/curupira/plugin/backup-plugin backup-plugin.xsd">
   <settings destination="c:\temp" limit="3" />
   <backups>
     <backup id="ruby" root="C:\Ruby">

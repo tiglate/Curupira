@@ -28,49 +28,66 @@ namespace Curupira.AppClient
                 return false;
             }
 
+            var barSettings = new ProgressBarOptions
+            {
+                CollapseWhenFinished = true,
+                EnableTaskBarProgress = true,
+            };
+
+            ProgressBar progressBar = null;
+
             try
             {
-                using (var progressBar = new ProgressBar(10000, "Loading"))
+                using (var plugin = _scope.ResolveNamed<IPlugin>(options.Plugin))
                 {
-                    using (var plugin = _scope.ResolveNamed<IPlugin>(options.Plugin))
+                    ConsoleHelper.WriteCentered($"Loaded: {plugin.Name}");
+                    Console.WriteLine();
+
+                    plugin.Init();
+
+                    progressBar = new ProgressBar(10000, "Loading", barSettings);
+
+                    plugin.Progress += (sender, e) =>
                     {
-                        plugin.Progress += (sender, e) =>
-                        {
-                            progressBar.Message = e.Message;
-                            var progress = progressBar.AsProgress<float>();
-                            progress.Report(e.Percentage / 100f);
-                        };
+                        progressBar.Message = e.Message;
+                        var progress = progressBar.AsProgress<float>();
+                        progress.Report(e.Percentage / 100f);
+                    };
 
-                        progressBar.Message = $"Loading plugin: {plugin.Name}...";
+                    progressBar.Message = $"Loading plugin: {plugin.Name}...";
 
-                        Console.WriteLine($"Executing plugin '{plugin.Name}'");
-                        plugin.Init();
+                    var pluginParams = ParseParams(options.Params);
 
-                        var pluginParams = ParseParams(options.Params);
+                    var success = await plugin.ExecuteAsync(pluginParams).ConfigureAwait(false);
 
-                        var success = await plugin.ExecuteAsync(pluginParams).ConfigureAwait(false);
+                    progressBar.Dispose();
+                    progressBar = null;
 
-                        if (success)
-                        {
-                            var message = $"Plugin '{plugin.Name}' executed successfully!";
-                            Console.WriteLine(message);
-                            _logProvider.Info(message);
-                        }
-                        else
-                        {
-                            var message = $"The execution of '{plugin.Name}' plugin failed.";
-                            Console.WriteLine(message);
-                            _logProvider.Info(message);
-                            _logProvider.Error(message);
-                        }
+                    if (success)
+                    {
+                        var message = $"Plugin '{plugin.Name}' executed successfully!";
+                        Console.WriteLine(message);
+                        _logProvider.Info(message);
+                    }
+                    else
+                    {
+                        var message = $"The execution of '{plugin.Name}' plugin failed.";
+                        Console.WriteLine(message);
+                        _logProvider.Info(message);
+                        _logProvider.Error(message);
                     }
                 }
+                
                 return true;
             }
             catch (Exception ex)
             {
                 _logProvider.Error(ex, $"Error when executing the plugin '{options.Plugin}'");
                 return false;
+            }
+            finally
+            {
+                progressBar?.Dispose();
             }
         }
 

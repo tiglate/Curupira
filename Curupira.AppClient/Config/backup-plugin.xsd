@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="http://curupira.org/plugin/backup-plugin"
-           xmlns="http://curupira.org/plugin/backup-plugin"
+           targetNamespace="http://ampliar.dev.br/projects/curupira/plugin/backup-plugin"
+           xmlns="http://ampliar.dev.br/projects/curupira/plugin/backup-plugin"
            elementFormDefault="qualified">
 
     <xs:element name="plugin">
