@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace Curupira.AppClient
+namespace Curupira.AppClient.Services
 {
     public interface IPluginExecutor
     {

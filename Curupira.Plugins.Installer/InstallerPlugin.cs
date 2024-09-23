@@ -26,6 +26,7 @@ namespace Curupira.Plugins.Installer
 
         public override async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
         {
+            _killed = false;
             var componentId = commandLineArgs != null && commandLineArgs.ContainsKey("component") ? commandLineArgs["component"] : null;
             Component selectedComponent = null;
 

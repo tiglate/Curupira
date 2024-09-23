@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using System.Xml;
 using Curupira.Plugins.Contract;
 
 namespace Curupira.Plugins.Common

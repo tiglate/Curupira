@@ -20,9 +20,26 @@ namespace Curupira.Plugins.Backup
         public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
             _killed = false;
+
+            var archiveId = commandLineArgs != null && commandLineArgs.ContainsKey("archive") ? commandLineArgs["archive"] : null;
+            BackupArchive selectedArchive = null;
+
+            if (!string.IsNullOrEmpty(archiveId))
+            {
+                selectedArchive = Config.Archives.FirstOrDefault(p => p.Id.Equals(archiveId, StringComparison.CurrentCultureIgnoreCase));
+
+                if (selectedArchive == null)
+                {
+                    Logger.Fatal(FormatLogMessage(nameof(ExecuteAsync), $"Archive '{archiveId}' not found."));
+                    return false;
+                }
+            }
+
+            var archives = selectedArchive != null ? new[] { selectedArchive } : Config.Archives;
+
             try
             {
-                foreach (var archive in Config.Archives)
+                foreach (var archive in archives)
                 {
                     if (_killed)
                     {

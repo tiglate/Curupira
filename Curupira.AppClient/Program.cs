@@ -1,5 +1,7 @@
 ﻿using Autofac;
 using CommandLine;
+using Curupira.AppClient.Infra.IoC;
+using Curupira.AppClient.Services;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -25,7 +27,7 @@ namespace Curupira.AppClient
             ApplyLogLevel(options.Level);
             ShowBanner();
 
-            var container = Startup.ConfigureServices(options);
+            var container = AutofacContainerBuilder.Configure(options);
             using (var scope = container.BeginLifetimeScope())
             {
                 var pluginExecutor = scope.Resolve<IPluginExecutor>();

@@ -20,6 +20,8 @@ namespace Curupira.Plugins.ServiceManager
 
         public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
+            _killed = false;
+
             // Check for the required "bundle" argument
             if (!commandLineArgs.TryGetValue("bundle", out string bundleId))
             {

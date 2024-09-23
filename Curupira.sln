@@ -17,6 +17,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.ServiceMan
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.Installer", "Curupira.Plugins.Installer\Curupira.Plugins.Installer.csproj", "{5AD1561A-8D9F-4087-BD72-7E33F0E68F54}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.WindowsService", "Curupira.WindowsService\Curupira.WindowsService.csproj", "{8A70E6B0-F650-407C-A828-1AF31C95D8CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.IoC", "Curupira.Plugins.IoC\Curupira.Plugins.IoC.csproj", "{B041B98E-2C44-41D0-95D0-985C8DF865AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +55,14 @@ Global
 		{5AD1561A-8D9F-4087-BD72-7E33F0E68F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AD1561A-8D9F-4087-BD72-7E33F0E68F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AD1561A-8D9F-4087-BD72-7E33F0E68F54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A70E6B0-F650-407C-A828-1AF31C95D8CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A70E6B0-F650-407C-A828-1AF31C95D8CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A70E6B0-F650-407C-A828-1AF31C95D8CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A70E6B0-F650-407C-A828-1AF31C95D8CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

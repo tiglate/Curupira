@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Curupira.AppClient
+namespace Curupira.AppClient.Services
 {
     public class PluginExecutor : IPluginExecutor
     {
@@ -22,7 +22,7 @@ namespace Curupira.AppClient
         {
             if (!_scope.IsRegisteredWithName(options.Plugin, typeof(IPlugin)))
             {
-                var message = $"Plugin 'options.Plugin' not found!";
+                var message = $"Plugin '{options.Plugin}' not found!";
                 Console.WriteLine(message);
                 _logProvider.Fatal(message);
                 return false;
