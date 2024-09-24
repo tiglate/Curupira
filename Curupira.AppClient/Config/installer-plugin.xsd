@@ -23,6 +23,7 @@
                                                 <xs:attribute name="value" type="xs:string" use="required"/>
                                             </xs:complexType>
                                         </xs:element>
+                                        <xs:element name="remove" type="xs:string" minOccurs="0" maxOccurs="unbounded" />
                                     </xs:sequence>
                                     <!-- Attributes for component -->
                                     <xs:attribute name="id" type="xs:string" use="required"/>

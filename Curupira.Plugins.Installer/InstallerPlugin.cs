@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
@@ -132,6 +133,13 @@ namespace Curupira.Plugins.Installer
                         return false;
                     }
 
+                    // Check if the entry should be removed
+                    if (component.RemoveItems.Any(removeItem => MatchesPattern(entry.FullName.Replace("/", "\\"), removeItem)))
+                    {
+                        Logger.Debug($"Skipping removed entry: {entry.FullName}");
+                        continue; // Skip this entry
+                    }
+
                     string destinationPath = Path.Combine(targetDir, entry.FullName);
 
                     if (IsDirectory(entry))
@@ -172,6 +180,21 @@ namespace Curupira.Plugins.Installer
 
             Logger.Info("Extraction completed successfully.");
             return true;
+        }
+
+        private bool MatchesPattern(string path, string pattern)
+        {
+            // Escape special characters in the pattern
+            string escapedPattern = Regex.Escape(pattern);
+
+            // Replace wildcard characters with their regular expression equivalents
+            string regexPattern = "^" + escapedPattern
+                                        .Replace("\\*", ".*") // * matches zero or more characters
+                                        .Replace("\\?", ".")  // ? matches any single character
+                                 + "$";
+
+            // Perform the regular expression match (case-insensitive)
+            return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase);
         }
 
         private bool IsDirectory(ZipArchiveEntry entry)

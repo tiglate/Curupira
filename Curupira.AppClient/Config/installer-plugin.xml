@@ -6,6 +6,8 @@
         <component id="ruby" type="zip">
             <param name="SourceFile" value="C:\temp\ruby.zip" />
             <param name="TargetDir" value="P:\Ruby" />
+            <remove>include\ruby-3.2.0\ruby.h</remove>
+            <remove>include\ruby-3.2.0\ruby\io\*</remove>
         </component>
         <component id="InstallAppTest" type="msi" action="install">
             <param name="SourceFile" value="C:\temp\AppTeste.msi" />

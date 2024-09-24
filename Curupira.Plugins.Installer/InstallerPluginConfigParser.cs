@@ -88,6 +88,14 @@ namespace Curupira.Plugins.Installer
                         component.Parameters[paramName] = paramValue;
                     }
 
+                    if (type == ComponentType.Zip)
+                    {
+                        foreach (XmlNode removeNode in componentNode.SelectNodes($"*[local-name()='remove' and namespace-uri()='{namespaceUri}']"))
+                        {
+                            component.RemoveItems.Add(removeNode.InnerText);
+                        }
+                    }
+
                     pluginConfig.Components.Add(component);
                 }
             }
