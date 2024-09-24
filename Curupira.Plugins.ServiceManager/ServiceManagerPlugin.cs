@@ -20,6 +20,8 @@ namespace Curupira.Plugins.ServiceManager
 
         public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
+
             _killed = false;
 
             // Check for the required "bundle" argument
@@ -90,6 +92,8 @@ namespace Curupira.Plugins.ServiceManager
 
         private bool StartService(ServiceAction serviceAction, ServiceController serviceController)
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(StartService), nameof(serviceAction), serviceAction, nameof(serviceController), serviceController);
+
             if (serviceController.Status != ServiceControllerStatus.Running)
             {
                 serviceController.Start();
@@ -106,6 +110,8 @@ namespace Curupira.Plugins.ServiceManager
 
         private bool StopService(ServiceAction serviceAction, ServiceController serviceController)
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(StopService), nameof(serviceAction), serviceAction, nameof(serviceController), serviceController);
+
             if (serviceController.CanStop && serviceController.Status != ServiceControllerStatus.Stopped)
             {
                 serviceController.Stop();
@@ -121,6 +127,8 @@ namespace Curupira.Plugins.ServiceManager
 
         private bool StopOrKillService(ServiceAction serviceAction, ServiceController serviceController)
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(StopOrKillService), nameof(serviceAction), serviceAction, nameof(serviceController), serviceController);
+
             if (serviceController.CanStop && serviceController.Status != ServiceControllerStatus.Stopped)
             {
                 try
@@ -157,6 +165,8 @@ namespace Curupira.Plugins.ServiceManager
 
         private bool GetServiceStatus(string logFile, ServiceController serviceController)
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(GetServiceStatus), nameof(logFile), logFile, nameof(serviceController), serviceController);
+
             if (string.IsNullOrWhiteSpace(logFile))
             {
                 Logger.Error($"To read the status of a service, you need to inform the logFile attribute of the bundle in the config file.");
@@ -183,6 +193,8 @@ namespace Curupira.Plugins.ServiceManager
 
         private bool TryKillServiceProcess(string serviceName)
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(TryKillServiceProcess), nameof(serviceName), serviceName);
+
             try
             {
                 var processId = GetServiceProcessId(serviceName);
@@ -204,8 +216,10 @@ namespace Curupira.Plugins.ServiceManager
             }
         }
 
-        public static int GetServiceProcessId(string serviceName)
+        public int GetServiceProcessId(string serviceName)
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(GetServiceProcessId), nameof(serviceName), serviceName);
+
             try
             {
                 string query = $"SELECT ProcessId FROM Win32_Service WHERE Name = '{serviceName}'";
@@ -227,12 +241,16 @@ namespace Curupira.Plugins.ServiceManager
 
         public override bool Kill()
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Kill));
+
             _killed = true;
             return true;
         }
 
         public override void Dispose()
         {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Dispose));
+
             // This plugin doesn't have any resources to dispose.
         }
     }

@@ -10,21 +10,23 @@ namespace Curupira.AppClient.Services
     public class PluginExecutor : IPluginExecutor
     {
         private readonly ILifetimeScope _scope;
-        private readonly ILogProvider _logProvider;
+        private readonly ILogProvider _logger;
 
-        public PluginExecutor(ILifetimeScope scope, ILogProvider logProvider)
+        public PluginExecutor(ILifetimeScope scope, ILogProvider logger)
         {
             _scope = scope;
-            _logProvider = logProvider;
+            _logger = logger;
         }
 
         public async Task<bool> ExecutePluginAsync(Options options)
         {
+            _logger.TraceMethod(nameof(PluginExecutor), nameof(ExecutePluginAsync), nameof(options), options);
+
             if (!_scope.IsRegisteredWithName(options.Plugin, typeof(IPlugin)))
             {
                 var message = $"Plugin '{options.Plugin}' not found!";
                 Console.WriteLine(message);
-                _logProvider.Fatal(message);
+                _logger.Fatal(message);
                 return false;
             }
 
@@ -40,41 +42,66 @@ namespace Curupira.AppClient.Services
             {
                 using (var plugin = _scope.ResolveNamed<IPlugin>(options.Plugin))
                 {
-                    ConsoleHelper.WriteCentered($"Loaded: {plugin.Name}");
-                    Console.WriteLine();
+                    if (options.NoProgressBar)
+                    {
+                        Console.WriteLine($"Loaded: {plugin.Name}");
+                    }
+                    else
+                    {
+                        ConsoleHelper.WriteCentered($"Loaded: {plugin.Name}");
+                        Console.WriteLine();
+                    }
 
                     plugin.Init();
 
-                    progressBar = new ProgressBar(10000, "Loading", barSettings);
-
-                    plugin.Progress += (sender, e) =>
+                    if (options.NoProgressBar)
                     {
-                        progressBar.Message = e.Message;
-                        var progress = progressBar.AsProgress<float>();
-                        progress.Report(e.Percentage / 100f);
-                    };
+                        var lastReportedProgress = -1;
 
-                    progressBar.Message = $"Loading plugin: {plugin.Name}...";
+                        plugin.Progress += (sender, e) =>
+                        {
+                            int currentProgress = (int)Math.Floor(e.Percentage / 10.0) * 10; // Round down to the nearest 10%
+
+                            if (currentProgress > lastReportedProgress) // Only report if progress has increased by at least 10%
+                            {
+                                _logger.Info($"[{currentProgress}%] {e.Message}");
+                                lastReportedProgress = currentProgress;
+                            }
+                        };
+                    }
+                    else
+                    {
+                        progressBar = new ProgressBar(10000, "Loading", barSettings);
+
+                        plugin.Progress += (sender, e) =>
+                        {
+                            progressBar.Message = e.Message;
+                            var progress = progressBar.AsProgress<float>();
+                            progress.Report(e.Percentage / 100f);
+                        };
+
+                        progressBar.Message = $"Loading plugin: {plugin.Name}...";
+                    }
 
                     var pluginParams = ParseParams(options.Params);
 
                     var success = await plugin.ExecuteAsync(pluginParams).ConfigureAwait(false);
 
-                    progressBar.Dispose();
+                    progressBar?.Dispose();
                     progressBar = null;
 
                     if (success)
                     {
                         var message = $"Plugin '{plugin.Name}' executed successfully!";
                         Console.WriteLine(message);
-                        _logProvider.Info(message);
+                        _logger.Info(message);
                     }
                     else
                     {
                         var message = $"The execution of '{plugin.Name}' plugin failed.";
                         Console.WriteLine(message);
-                        _logProvider.Info(message);
-                        _logProvider.Error(message);
+                        _logger.Info(message);
+                        _logger.Error(message);
                     }
                 }
                 
@@ -82,7 +109,7 @@ namespace Curupira.AppClient.Services
             }
             catch (Exception ex)
             {
-                _logProvider.Error(ex, $"Error when executing the plugin '{options.Plugin}'");
+                _logger.Error(ex, $"Error when executing the plugin '{options.Plugin}'");
                 return false;
             }
             finally
@@ -94,6 +121,8 @@ namespace Curupira.AppClient.Services
         // Helper method to convert string parameters to IDictionary<string, string>
         private IDictionary<string, string> ParseParams(string paramString)
         {
+            _logger.TraceMethod(nameof(PluginExecutor), nameof(ParseParams), nameof(paramString), paramString);
+
             var paramDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             if (!string.IsNullOrEmpty(paramString))

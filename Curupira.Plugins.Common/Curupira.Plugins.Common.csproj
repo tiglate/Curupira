@@ -55,6 +55,7 @@
     <Compile Include="FileSystemHelper.cs" />
     <Compile Include="NLogProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SystemInformationClass.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Curupira.Plugins.Contract\Curupira.Plugins.Contract.csproj">

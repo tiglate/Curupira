@@ -21,11 +21,15 @@ namespace Curupira.Plugins.Installer
 
         public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
+
             return ExecuteAsync(commandLineArgs).GetAwaiter().GetResult();
         }
 
         public override async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
         {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(ExecuteAsync), nameof(commandLineArgs), commandLineArgs);
+
             _killed = false;
             var componentId = commandLineArgs != null && commandLineArgs.ContainsKey("component") ? commandLineArgs["component"] : null;
             Component selectedComponent = null;
@@ -40,6 +44,17 @@ namespace Curupira.Plugins.Installer
                     return false;
                 }
             }
+
+            var ignoreUnauthorizedAccess = false;
+
+            if (commandLineArgs.TryGetValue("ignoreUnauthorizedAccess", out string ignoreUnauthorizedAccessString))
+            {
+                if (!string.IsNullOrEmpty(ignoreUnauthorizedAccessString))
+                {
+                    ignoreUnauthorizedAccess = bool.Parse(ignoreUnauthorizedAccessString.Trim().ToLower());
+                }
+            }
+
             bool sucess = true;
             var components = selectedComponent != null ? new[] { selectedComponent } : Config.Components;
             var processedComponents = 0;
@@ -60,7 +75,7 @@ namespace Curupira.Plugins.Installer
                     switch (component.Type)
                     {
                         case ComponentType.Zip:
-                            auxSuccess = HandleZipComponent(component);
+                            auxSuccess = HandleZipComponent(component, ignoreUnauthorizedAccess);
                             sucess = sucess && auxSuccess;
                             break;
                         case ComponentType.Msi:
@@ -90,8 +105,10 @@ namespace Curupira.Plugins.Installer
             return sucess;
         }
 
-        private bool HandleZipComponent(Component component)
+        private bool HandleZipComponent(Component component, bool ignoreUnauthorizedAccess = false)
         {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleZipComponent), nameof(component), component, nameof(ignoreUnauthorizedAccess), ignoreUnauthorizedAccess);
+
             string sourceFile = component.Parameters["SourceFile"];
             string targetDir = component.Parameters["TargetDir"];
 
@@ -123,7 +140,28 @@ namespace Curupira.Plugins.Installer
                     }
                     else
                     {
-                        entry.ExtractToFile(destinationPath, true); // Overwrite existing files
+                        var auxDir = Path.GetDirectoryName(destinationPath);
+
+                        if (!Directory.Exists(auxDir))
+                        {
+                            Directory.CreateDirectory(auxDir);
+                        }
+
+                        if (ignoreUnauthorizedAccess)
+                        {
+                            try
+                            {
+                                entry.ExtractToFile(destinationPath, true); // Overwrite existing files
+                            }
+                            catch (UnauthorizedAccessException)
+                            {
+                                Logger.Warn($"Impossible to create/override the file: '{destinationPath}'");
+                            }
+                        }
+                        else
+                        {
+                            entry.ExtractToFile(destinationPath, true); // Overwrite existing files
+                        }
                     }
 
                     processedEntries++;
@@ -138,6 +176,8 @@ namespace Curupira.Plugins.Installer
 
         private bool IsDirectory(ZipArchiveEntry entry)
         {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(IsDirectory), nameof(entry), entry);
+
             if (entry == null)
             {
                 return false;
@@ -147,6 +187,8 @@ namespace Curupira.Plugins.Installer
 
         private async Task<bool> HandleMsiComponentAsync(Component component)
         {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleMsiComponentAsync), nameof(component), component);
+
             string sourceFile = component.Parameters["SourceFile"];
             if (string.IsNullOrEmpty(sourceFile))
             {
@@ -200,6 +242,8 @@ namespace Curupira.Plugins.Installer
 
         private async Task<bool> HandleBatOrExeComponentAsync(Component component)
         {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleBatOrExeComponentAsync), nameof(component), component);
+
             string sourceFile = component.Parameters["SourceFile"];
             if (string.IsNullOrEmpty(sourceFile))
             {
@@ -251,12 +295,15 @@ namespace Curupira.Plugins.Installer
 
         public override bool Kill()
         {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(Kill));
+
             _killed = true;
             return true;
         }
 
         public override void Dispose()
         {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(Dispose));
             // This plugin doesn't have any resources to dispose.
         }
     }

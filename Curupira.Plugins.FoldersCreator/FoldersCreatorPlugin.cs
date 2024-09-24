@@ -22,6 +22,8 @@ namespace Curupira.Plugins.FoldersCreator
 
         public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
+            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
+
             _killed = false;
             var success = true;
             try
@@ -92,6 +94,8 @@ namespace Curupira.Plugins.FoldersCreator
 
         public override bool Kill()
         {
+            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Kill));
+
             _killed = true;
             return true;
         }
@@ -103,6 +107,8 @@ namespace Curupira.Plugins.FoldersCreator
         /// <returns>True if the user has permission, false otherwise</returns>
         private bool HasCreateDirectoryPermission(string directoryPath)
         {
+            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(HasCreateDirectoryPermission), nameof(directoryPath), directoryPath);
+
             try
             {
                 // Get the current Windows identity and the user's principal
@@ -146,6 +152,7 @@ namespace Curupira.Plugins.FoldersCreator
 
         public override void Dispose()
         {
+            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Dispose));
             // This plugin doesn't have any resources to dispose.
         }
     }

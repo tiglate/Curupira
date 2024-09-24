@@ -30,12 +30,14 @@ namespace Curupira.Plugins.Common
 
         public virtual void Init()
         {
+            Logger.TraceMethod(nameof(BasePlugin<TPluginConfig>), nameof(Init));
+
             Config = _configParser.Execute();
         }
 
         public virtual async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
         {
-            Logger.Trace(FormatLogMessage(nameof(ExecuteAsync), "method called."));
+            Logger.TraceMethod(nameof(BasePlugin<TPluginConfig>), nameof(ExecuteAsync), nameof(commandLineArgs), commandLineArgs);
 
             try
             {
@@ -51,7 +53,7 @@ namespace Curupira.Plugins.Common
 
         public virtual async Task<bool> KillAsync()
         {
-            Logger.Trace(FormatLogMessage(nameof(KillAsync), "method called."));
+            Logger.TraceMethod(nameof(BasePlugin<TPluginConfig>), nameof(KillAsync));
 
             try
             {

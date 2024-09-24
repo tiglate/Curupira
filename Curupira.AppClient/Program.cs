@@ -25,7 +25,11 @@ namespace Curupira.AppClient
         private static async Task<int> RunApplicationAsync(Options options)
         {
             ApplyLogLevel(options.Level);
-            ShowBanner();
+
+            if (!options.NoLogo)
+            {
+                ShowBanner();
+            }
 
             var container = AutofacContainerBuilder.Configure(options);
             using (var scope = container.BeginLifetimeScope())

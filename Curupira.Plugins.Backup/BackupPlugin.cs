@@ -19,9 +19,16 @@ namespace Curupira.Plugins.Backup
 
         public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
             _killed = false;
 
             var archiveId = commandLineArgs != null && commandLineArgs.ContainsKey("archive") ? commandLineArgs["archive"] : null;
+
+            if (archiveId == null)
+            {
+                archiveId = commandLineArgs != null && commandLineArgs.ContainsKey("backup") ? commandLineArgs["backup"] : null;
+            }
+
             BackupArchive selectedArchive = null;
 
             if (!string.IsNullOrEmpty(archiveId))
@@ -73,17 +80,22 @@ namespace Curupira.Plugins.Backup
 
         public override bool Kill()
         {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(Kill));
+
             _killed = true;
             return true;
         }
 
         public override void Dispose()
         {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(Dispose));
             // This plugin doesn't have any resources to dispose.
         }
 
         private void AddItemsToZip(ZipArchive zipArchive, BackupArchive backupArchive)
         {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(AddItemsToZip), nameof(zipArchive), zipArchive, nameof(backupArchive), backupArchive);
+
             var toBeAddedList = GetFilesToBeAddedToZip(backupArchive);
             var totalEntries = toBeAddedList.Count;
             var processedEntries = 0;
@@ -103,6 +115,8 @@ namespace Curupira.Plugins.Backup
 
         private void AddItemToZip(ZipArchive zipArchive, string itemPath, string rootPath)
         {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(AddItemToZip), nameof(zipArchive), zipArchive, nameof(itemPath), itemPath, nameof(rootPath), rootPath);
+
             string entryName = itemPath.Substring(rootPath.Length + 1); // Relative path within the zip
 
             if (File.Exists(itemPath))
@@ -119,6 +133,8 @@ namespace Curupira.Plugins.Backup
 
         private IList<string> GetFilesToBeAddedToZip(BackupArchive archive)
         {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(GetFilesToBeAddedToZip), nameof(archive), archive);
+
             var filesList = new List<string>();
             var matcher = new FileMatcher(archive.Root, archive.Exclusions);
             GetFilesToBeAddedToZip(new DirectoryInfo(archive.Root), filesList, matcher);
@@ -127,6 +143,8 @@ namespace Curupira.Plugins.Backup
 
         private void GetFilesToBeAddedToZip(DirectoryInfo directory, List<string> filesList, FileMatcher matcher)
         {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(GetFilesToBeAddedToZip), nameof(directory), directory, nameof(filesList), filesList, nameof(matcher), matcher);
+
             if (_killed)
             {
                 return;
@@ -149,6 +167,8 @@ namespace Curupira.Plugins.Backup
 
         private void EnforceBackupLimit(string backupId)
         {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(EnforceBackupLimit), nameof(backupId), backupId);
+
             if (Config.Limit > 0)
             {
                 string[] existingBackups = Directory.GetFiles(Config.Destination, $"*-{backupId}.zip");

@@ -64,5 +64,14 @@ namespace Curupira.Plugins.Contract
         /// <param name="message">An optional message to include with the exception log.</param>
         /// <param name="args">Optional arguments for formatting the message.</param>
         void Error(Exception exception, string message = null, params object[] args);
+
+        /// <summary>
+        /// Logs the entry of a method along with its parameters.
+        /// </summary>
+        /// <param name="methodName">The name of the class containing the method.</param>
+        /// <param name="methodName">The name of the method being entered.</param>
+        /// <param name="parameters">An array of parameter names and their corresponding values, 
+        /// alternating between name and value. String and char values will be enclosed in quotes.</param>
+        void TraceMethod(string className, string methodName, params object[] parameters);
     }
 }
