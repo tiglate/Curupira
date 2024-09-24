@@ -150,10 +150,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Attributes\ApiKeyAuthorizeAttribute.cs" />
     <Compile Include="Controllers\BackupController.cs" />
     <Compile Include="Controllers\FoldersCreatorController.cs" />
     <Compile Include="Controllers\InstallerController.cs" />
     <Compile Include="Controllers\ServiceManagerController.cs" />
+    <Compile Include="Infra\EnvFileParser.cs" />
     <Compile Include="Infra\IoC\AutofacContainerBuilder.cs" />
     <Compile Include="Infra\IoC\LocalModule.cs" />
     <Compile Include="ProjectInstaller.cs">
@@ -178,6 +180,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include=".env">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="NLog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

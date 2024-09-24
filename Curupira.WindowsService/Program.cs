@@ -4,6 +4,7 @@ using Curupira.WindowsService.WindowsService;
 using Microsoft.Owin.Hosting;
 using NLog;
 using System.Configuration;
+using System.IO;
 
 namespace Curupira.WindowsService
 {
@@ -14,6 +15,8 @@ namespace Curupira.WindowsService
 
         public static void Main(string[] args)
         {
+            SetEnvironmentVariablesInDevMode();
+
             if (Environment.UserInteractive)
             {
                 // Run in console mode
@@ -62,6 +65,23 @@ namespace Curupira.WindowsService
                 _webApp.Dispose();
                 logger.Info("OWIN server stopped gracefully.");
             }
+        }
+
+        private static void SetEnvironmentVariablesInDevMode()
+        {
+#if DEBUG
+            var envFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
+
+            if (!File.Exists(envFile))
+            {
+                return;
+            }
+
+            foreach (var pair in Infra.EnvFileParser.Parse(envFile))
+            {
+                Environment.SetEnvironmentVariable(pair.Key, pair.Value);
+            }
+#endif
         }
     }
 }
