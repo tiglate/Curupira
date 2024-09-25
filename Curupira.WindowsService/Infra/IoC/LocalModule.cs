@@ -23,6 +23,9 @@ namespace Curupira.WindowsService.Infra.IoC
 
             builder.RegisterType<EventLogService>()
                 .As<IEventLogService>();
+
+            builder.RegisterType<SystemUsageService>()
+                .As<ISystemUsageService>();
         }
     }
 }

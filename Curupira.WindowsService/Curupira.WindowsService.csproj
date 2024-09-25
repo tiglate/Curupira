@@ -161,12 +161,15 @@
     <Compile Include="Controllers\InstallerController.cs" />
     <Compile Include="Controllers\ServiceManagerController.cs" />
     <Compile Include="Controllers\ServicesController.cs" />
+    <Compile Include="Controllers\SystemUsageController.cs" />
     <Compile Include="Controllers\TasksController.cs" />
     <Compile Include="Infra\EnvFileParser.cs" />
     <Compile Include="Infra\IoC\AutofacContainerBuilder.cs" />
     <Compile Include="Infra\IoC\LocalModule.cs" />
+    <Compile Include="Model\DiskUsageModel.cs" />
     <Compile Include="Model\EventLogModel.cs" />
     <Compile Include="Model\ServiceModel.cs" />
+    <Compile Include="Model\SystemUsageModel.cs" />
     <Compile Include="Model\TaskModel.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
@@ -179,9 +182,11 @@
     <Compile Include="Services\IMyTaskService.cs" />
     <Compile Include="Services\IPluginExecutorService.cs" />
     <Compile Include="Services\IServiceService.cs" />
+    <Compile Include="Services\ISystemUsageService.cs" />
     <Compile Include="Services\PluginExecutorService.cs" />
     <Compile Include="Services\ServiceService.cs" />
     <Compile Include="Services\MyTaskService.cs" />
+    <Compile Include="Services\SystemUsageService.cs" />
     <Compile Include="WindowsService\ControlService.cs">
       <SubType>Component</SubType>
     </Compile>
