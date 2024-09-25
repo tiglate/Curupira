@@ -19,12 +19,12 @@ namespace Curupira.WindowsService.Controllers
 
         [HttpGet]
         [Route("run/{bundleId}")]
-        public async Task<IHttpActionResult> Run(string bundleId)
+        public async Task<IHttpActionResult> RunAsync(string bundleId)
         {
             var result = await _pluginExecutorService.ExecutePluginAsync("ServiceManagerPlugin", new Dictionary<string, string>
             {
                 { "bundle", bundleId }
-            });
+            }).ConfigureAwait(false); ;
             return Ok(result);
         }
     }

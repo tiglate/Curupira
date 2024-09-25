@@ -34,10 +34,10 @@ namespace Curupira.WindowsService
         {
             try
             {
-                StartOwinServer();
+                StartServer();
                 Console.WriteLine("Press [Enter] to stop the server...");
                 Console.ReadLine();
-                StopOwinServer();
+                StopServer();
             }
             catch (Exception ex)
             {
@@ -46,7 +46,7 @@ namespace Curupira.WindowsService
         }
 
         // Start the OWIN Web Server
-        public static void StartOwinServer()
+        public static void StartServer()
         {
             string baseAddress = ConfigurationManager.AppSettings["BaseAddress"];
             logger.Info($"Starting OWIN server at {baseAddress}");
@@ -57,7 +57,7 @@ namespace Curupira.WindowsService
         }
 
         // Stop the OWIN Web Server gracefully
-        public static void StopOwinServer()
+        public static void StopServer()
         {
             if (_webApp != null)
             {

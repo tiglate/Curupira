@@ -11,12 +11,12 @@ namespace Curupira.WindowsService.WindowsService
 
         protected override void OnStart(string[] args)
         {
-            Program.StartOwinServer();
+            Program.StartServer();
         }
 
         protected override void OnStop()
         {
-            Program.StopOwinServer();
+            Program.StopServer();
         }
     }
 }

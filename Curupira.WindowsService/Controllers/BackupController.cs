@@ -19,20 +19,20 @@ namespace Curupira.WindowsService.Controllers
 
         [HttpGet]
         [Route("run/{archiveId}")]
-        public async Task<IHttpActionResult> Run(string archiveId)
+        public async Task<IHttpActionResult> RunAsync(string archiveId)
         {
             var result = await _pluginExecutorService.ExecutePluginAsync("BackupPlugin", new Dictionary<string, string>
             {
                 { "archive", archiveId }
-            });
+            }).ConfigureAwait(false);
             return Ok(result);
         }
 
         [HttpGet]
         [Route("runAll")]
-        public async Task<IHttpActionResult> RunAll()
+        public async Task<IHttpActionResult> RunAllAsync()
         {
-            var result = await _pluginExecutorService.ExecutePluginAsync("BackupPlugin", new Dictionary<string, string>());
+            var result = await _pluginExecutorService.ExecutePluginAsync("BackupPlugin", new Dictionary<string, string>()).ConfigureAwait(false);
             return Ok(result);
         }
     }

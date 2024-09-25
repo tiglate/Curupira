@@ -9,19 +9,19 @@ namespace Curupira.WindowsService.Services
     public class PluginExecutorService : IPluginExecutorService
     {
         private readonly ILifetimeScope _scope;
-        private readonly ILogProvider _logProvider;
+        private readonly ILogProvider _logger;
 
-        public PluginExecutorService(ILifetimeScope scope, ILogProvider logProvider)
+        public PluginExecutorService(ILifetimeScope scope, ILogProvider logger)
         {
             _scope = scope;
-            _logProvider = logProvider;
+            _logger = logger;
         }
 
         public async Task<bool> ExecutePluginAsync(string pluginName, IDictionary<string, string> pluginParams)
         {
             if (!_scope.IsRegisteredWithName(pluginName, typeof(IPlugin)))
             {
-                _logProvider.Error($"Plugin '{pluginName}' not found!");
+                _logger.Error($"Plugin '{pluginName}' not found!");
                 return false;
             }
 
@@ -37,7 +37,7 @@ namespace Curupira.WindowsService.Services
             }
             catch (Exception ex)
             {
-                _logProvider.Error(ex, $"Error when executing the plugin '{pluginName}'");
+                _logger.Error(ex, $"Error when executing the plugin '{pluginName}'");
                 return false;
             }
         }

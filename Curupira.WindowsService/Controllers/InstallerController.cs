@@ -19,12 +19,12 @@ namespace Curupira.WindowsService.Controllers
 
         [HttpGet]
         [Route("run/{componentId}")]
-        public async Task<IHttpActionResult> Run(string componentId)
+        public async Task<IHttpActionResult> RunAsync(string componentId)
         {
             var result = await _pluginExecutorService.ExecutePluginAsync("InstallerPlugin", new Dictionary<string, string>
             {
                 { "component", componentId }
-            });
+            }).ConfigureAwait(false); ;
             return Ok(result);
         }
     }

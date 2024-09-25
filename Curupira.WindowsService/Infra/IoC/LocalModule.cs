@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Autofac.Integration.WebApi;
+using Curupira.WindowsService.Service;
 using Curupira.WindowsService.Services;
 
 namespace Curupira.WindowsService.Infra.IoC
@@ -13,6 +14,15 @@ namespace Curupira.WindowsService.Infra.IoC
             builder.RegisterType<PluginExecutorService>()
                 .As<IPluginExecutorService>()
                 .SingleInstance();
+
+            builder.RegisterType<ServiceService>()
+                .As<IServiceService>();
+
+            builder.RegisterType<MyTaskService>()
+                .As<IMyTaskService>();
+
+            builder.RegisterType<EventLogService>()
+                .As<IEventLogService>();
         }
     }
 }

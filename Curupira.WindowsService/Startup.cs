@@ -1,19 +1,19 @@
 ﻿using Autofac.Integration.WebApi;
 using System.Web.Http;
 using Owin;
-using NLog;
 using Curupira.WindowsService.Infra;
 using Curupira.WindowsService.Infra.IoC;
+using Autofac;
+using Curupira.Plugins.Contract;
 
 namespace Curupira.WindowsService
 {
     public class Startup
     {
-        private static readonly Logger logger = LogManager.GetCurrentClassLogger();
-
         public void Configuration(IAppBuilder appBuilder)
         {
             var container = AutofacContainerBuilder.Configure();
+            var logger = container.Resolve<ILogProvider>();
 
             var config = new HttpConfiguration
             {

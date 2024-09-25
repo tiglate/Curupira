@@ -1,15 +1,15 @@
 ﻿using System.Web.Http.Filters;
 using System.Net;
 using System.Net.Http;
-using NLog;
+using Curupira.Plugins.Contract;
 
 namespace Curupira.WindowsService.Infra
 {
     public class GlobalExceptionFilter : ExceptionFilterAttribute
     {
-        private readonly Logger _logger;
+        private readonly ILogProvider _logger;
 
-        public GlobalExceptionFilter(Logger logger)
+        public GlobalExceptionFilter(ILogProvider logger)
         {
             _logger = logger;
         }
