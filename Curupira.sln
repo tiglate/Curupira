@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.WindowsService", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.IoC", "Curupira.Plugins.IoC\Curupira.Plugins.IoC.csproj", "{B041B98E-2C44-41D0-95D0-985C8DF865AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Tests", "Curupira.Tests\Curupira.Tests.csproj", "{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

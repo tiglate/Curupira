@@ -65,7 +65,7 @@ namespace Curupira.Plugins.Backup
 
                     foreach (XmlNode removeNode in backupNode.SelectNodes($"*[local-name()='remove' and namespace-uri()='{namespaceUri}']"))
                     {
-                        archive.Exclusions.Add(removeNode.InnerText.TrimEnd('\\', '/'));
+                        archive.Exclusions.Add(removeNode.InnerText);
                     }
 
                     pluginConfig.Archives.Add(archive);

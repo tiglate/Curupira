@@ -22,12 +22,8 @@ namespace Curupira.Plugins.Backup
             Logger.TraceMethod(nameof(BackupPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
             _killed = false;
 
-            var archiveId = commandLineArgs != null && commandLineArgs.ContainsKey("archive") ? commandLineArgs["archive"] : null;
-
-            if (archiveId == null)
-            {
-                archiveId = commandLineArgs != null && commandLineArgs.ContainsKey("backup") ? commandLineArgs["backup"] : null;
-            }
+            var archiveId = (commandLineArgs != null && commandLineArgs.ContainsKey("archive") ? commandLineArgs["archive"] : null)
+                         ?? (commandLineArgs != null && commandLineArgs.ContainsKey("backup") ? commandLineArgs["backup"] : null);
 
             BackupArchive selectedArchive = null;
 

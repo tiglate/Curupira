@@ -65,7 +65,7 @@ namespace Curupira.AppClient.Services
                             if (currentProgress > lastReportedProgress) // Only report if progress has increased by at least 10%
                             {
                                 _logger.Info($"[{currentProgress}%] {e.Message}");
-                                lastReportedProgress = currentProgress;
+                                lastReportedProgress = currentProgress == 100 ? -1 : currentProgress;
                             }
                         };
                     }

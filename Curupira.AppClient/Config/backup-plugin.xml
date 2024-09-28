@@ -2,30 +2,22 @@
 <plugin xmlns="http://ampliar.dev.br/projects/curupira/plugin/backup-plugin"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://ampliar.dev.br/projects/curupira/plugin/backup-plugin backup-plugin.xsd">
-  <settings destination="c:\temp" limit="3" />
-  <backups>
-    <backup id="ruby" root="C:\Ruby">
-      <!--
-      <remove>lib</remove>
-      <remove>msys64</remove>
-      <remove>share</remove>
-      <remove>*.txt</remove>
-      -->
-      <remove>bin</remove>
-      <remove>etc\ssl\certs</remove>
-      
-      <remove>include</remove>
-      <remove>*.txt</remove>
-      <remove>msys64</remove>
-      <remove>ridk_use</remove>
-      <remove>share\doc\ruby\html\*.html</remove>
-      <remove>unins000.dat</remove>
-      <remove>unins000.exe</remove>
-    </backup>
-    <backup id="dell" root="C:\Dell\Drivers\HFVP5\EULA">
-    </backup>
-    <backup id="xampp" root="C:\xampp\cgi-bin">
-      <remove>*.pl</remove>
-    </backup>
-  </backups>
+    <settings destination="c:\temp" limit="3" />
+    <backups>
+        <backup id="ruby" root="C:\Ruby">
+            <remove>bin</remove>
+            <remove>etc</remove>
+            <remove>include\</remove>
+            <remove>lib\</remove>
+            <remove>msys64</remove>
+            <remove>packages\*</remove>
+            <remove>**\*.html</remove>
+            <remove>LICENSE.txt</remove>
+        </backup>
+        <backup id="dell" root="C:\Dell\Drivers\HFVP5\EULA">
+        </backup>
+        <backup id="xampp" root="C:\xampp\cgi-bin">
+            <remove>*.pl</remove>
+        </backup>
+    </backups>
 </plugin>
