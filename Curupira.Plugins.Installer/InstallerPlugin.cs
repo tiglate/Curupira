@@ -20,7 +20,7 @@ namespace Curupira.Plugins.Installer
         {
         }
 
-        protected override bool Execute(IDictionary<string, string> commandLineArgs)
+        public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
             Logger.TraceMethod(nameof(InstallerPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
 
@@ -316,7 +316,7 @@ namespace Curupira.Plugins.Installer
             return true;
         }
 
-        protected override bool Kill()
+        public override bool Kill()
         {
             Logger.TraceMethod(nameof(InstallerPlugin), nameof(Kill));
 

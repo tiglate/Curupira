@@ -151,14 +151,14 @@ namespace Curupira.Tests.Plugins.Common
         public void SetThrowOnExecute(bool shouldThrow) => _throwOnExecute = shouldThrow;
         public void SetThrowOnKill(bool shouldThrow) => _throwOnKill = shouldThrow;
 
-        protected override bool Execute(IDictionary<string, string> commandLineArgs)
+        public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
             if (_throwOnExecute)
                 throw new InvalidOperationException("Simulated exception in Execute.");
             return _executeResult;
         }
 
-        protected override bool Kill()
+        public override bool Kill()
         {
             if (_throwOnKill)
                 throw new InvalidOperationException("Simulated exception in Kill.");

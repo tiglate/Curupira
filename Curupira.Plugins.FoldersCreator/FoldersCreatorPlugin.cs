@@ -20,7 +20,7 @@ namespace Curupira.Plugins.FoldersCreator
         {
         }
 
-        protected override bool Execute(IDictionary<string, string> commandLineArgs)
+        public override bool Execute(IDictionary<string, string> commandLineArgs)
         {
             Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
 
@@ -41,7 +41,7 @@ namespace Curupira.Plugins.FoldersCreator
                     }
                     else
                     {
-                        if (!Directory.Exists(directoryPath))
+                        if (!DirectoryExists(directoryPath))
                         {
                             string existingDirectory = FileSystemHelper.GetFirstExistingDirectoryOrRoot(directoryPath);
 
@@ -54,7 +54,7 @@ namespace Curupira.Plugins.FoldersCreator
                             {
                                 try
                                 {
-                                    Directory.CreateDirectory(directoryPath);
+                                    CreateDirectory(directoryPath);
                                 }
                                 catch (IOException)
                                 {
@@ -69,7 +69,7 @@ namespace Curupira.Plugins.FoldersCreator
                             }
                             else if (HasCreateDirectoryPermission(existingDirectory))
                             {
-                                Directory.CreateDirectory(directoryPath);
+                                CreateDirectory(directoryPath);
                             }
                             else
                             {
@@ -92,7 +92,7 @@ namespace Curupira.Plugins.FoldersCreator
             return success;
         }
 
-        protected override bool Kill()
+        public override bool Kill()
         {
             Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Kill));
 
@@ -105,7 +105,7 @@ namespace Curupira.Plugins.FoldersCreator
         /// </summary>
         /// <param name="directoryPath">The path to the directory to check</param>
         /// <returns>True if the user has permission, false otherwise</returns>
-        private bool HasCreateDirectoryPermission(string directoryPath)
+        protected virtual bool HasCreateDirectoryPermission(string directoryPath)
         {
             Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(HasCreateDirectoryPermission), nameof(directoryPath), directoryPath);
 
@@ -116,7 +116,7 @@ namespace Curupira.Plugins.FoldersCreator
                 WindowsPrincipal principal = new WindowsPrincipal(currentUser);
 
                 // Get the access control information for the directory
-                DirectorySecurity directorySecurity = Directory.GetAccessControl(directoryPath);
+                DirectorySecurity directorySecurity = GetAccessControl(directoryPath);
 
                 // Get the access rules (user and group access)
                 AuthorizationRuleCollection accessRules = directorySecurity.GetAccessRules(true, true, typeof(SecurityIdentifier));
@@ -155,5 +155,24 @@ namespace Curupira.Plugins.FoldersCreator
             Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Dispose));
             // This plugin doesn't have any resources to dispose.
         }
+
+        #region Wrappers to be mocked by unit tests
+
+        protected virtual DirectoryInfo CreateDirectory(string directoryPath)
+        {
+            return Directory.CreateDirectory(directoryPath);
+        }
+
+        protected virtual bool DirectoryExists(string path)
+        {
+            return Directory.Exists(path);
+        }
+
+        protected virtual DirectorySecurity GetAccessControl(string directoryPath)
+        {
+            return Directory.GetAccessControl(directoryPath);
+        }
+
+        #endregion
     }
 }

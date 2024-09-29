@@ -2,10 +2,10 @@
 <plugin xmlns="http://ampliar.dev.br/projects/curupira/plugin/folders-creator-plugin"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://ampliar.dev.br/projects/curupira/plugin/folders-creator-plugin folders-creator-plugin.xsd">
-  <directories>
-    <add>C:\temp\myapp\bin</add>
-    <add>C:\temp\myapp\backup\logs</add>
-    <add>C:\temp\myapp\other</add>
-    <add>\\192.168.1.1\daniel\folder\newfolder</add>
-  </directories>
+    <directories>
+        <add>C:\temp\myapp\bin</add>
+        <add>C:\temp\myapp\backup\logs</add>
+        <add>C:\temp\myapp\other</add>
+        <add>\\192.168.1.1\daniel\folder\newfolder</add>
+    </directories>
 </plugin>

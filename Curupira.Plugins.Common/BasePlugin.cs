@@ -22,12 +22,12 @@ namespace Curupira.Plugins.Common
 
         public virtual string Name { get; private set; }
 
-        protected virtual bool Execute(IDictionary<string, string> commandLineArgs)
+        public virtual bool Execute(IDictionary<string, string> commandLineArgs)
         {
             return true;
         }
 
-        protected virtual bool Kill()
+        public virtual bool Kill()
         {
             return true;
         }

@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Curupira.Plugins.FoldersCreator
 {
+    [ExcludeFromCodeCoverage]
     public class FoldersCreatorPluginConfig
     {
         public FoldersCreatorPluginConfig()
