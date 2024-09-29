@@ -14,10 +14,11 @@
             <remove>**\*.html</remove>
             <remove>LICENSE.txt</remove>
         </backup>
-        <backup id="dell" root="C:\Dell\Drivers\HFVP5\EULA">
+        <backup id="dell" root="C:\Dell\Drivers\HFVP5\EULA" destination="P:\temp">
         </backup>
         <backup id="xampp" root="C:\xampp\cgi-bin">
             <remove>*.pl</remove>
         </backup>
+        <backup id="tomcat" root="C:\tomcat" />
     </backups>
 </plugin>

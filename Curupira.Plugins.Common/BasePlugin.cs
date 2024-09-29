@@ -22,9 +22,15 @@ namespace Curupira.Plugins.Common
 
         public virtual string Name { get; private set; }
 
-        public abstract bool Execute(IDictionary<string, string> commandLineArgs);
+        protected virtual bool Execute(IDictionary<string, string> commandLineArgs)
+        {
+            return true;
+        }
 
-        public abstract bool Kill();
+        protected virtual bool Kill()
+        {
+            return true;
+        }
 
         public event EventHandler<PluginProgressEventArgs> Progress;
 

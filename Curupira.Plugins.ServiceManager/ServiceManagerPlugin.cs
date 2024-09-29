@@ -18,7 +18,7 @@ namespace Curupira.Plugins.ServiceManager
         {
         }
 
-        public override bool Execute(IDictionary<string, string> commandLineArgs)
+        protected override bool Execute(IDictionary<string, string> commandLineArgs)
         {
             Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
 
@@ -239,7 +239,7 @@ namespace Curupira.Plugins.ServiceManager
             return -1; // Return -1 if not found or any error occurs
         }
 
-        public override bool Kill()
+        protected override bool Kill()
         {
             Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Kill));
 

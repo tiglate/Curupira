@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading.Tasks;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
 
@@ -17,10 +18,77 @@ namespace Curupira.Plugins.Backup
         {
         }
 
-        public override bool Execute(IDictionary<string, string> commandLineArgs)
+        public override async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
         {
-            Logger.TraceMethod(nameof(BackupPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(ExecuteAsync), nameof(commandLineArgs), commandLineArgs);
+
             _killed = false;
+
+            var archives = GetBackupArchives(commandLineArgs);
+
+            if (archives == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                // Process each archive in parallel using Task.WhenAll
+                var tasks = archives.Select(async archive =>
+                {
+                    if (_killed)
+                    {
+                        Logger.Info(FormatLogMessage(nameof(ExecuteAsync), "Plugin execution cancelled."));
+                        return false;
+                    }
+
+                    var destination = !string.IsNullOrEmpty(archive.Destination) ? archive.Destination : Config.Destination;
+                    var zipFileName = $"{DateTime.Now:yyyyMMddhhmmss}-{archive.Id}.zip";
+                    var zipFilePath = Path.Combine(destination, zipFileName);
+
+                    // Enforce the backup limit asynchronously
+                    await Task.Run(() => EnforceBackupLimit(archive.Id));
+
+                    // Create the zip archive asynchronously
+                    using (var zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
+                    {
+                        if (!await Task.Run(() => AddItemsToZip(zipArchive, archive)))
+                        {
+                            return false;
+                        }
+                    }
+
+                    Logger.Info($"Backup '{archive.Id}' created successfully at '{zipFilePath}'.");
+                    return true;
+                });
+
+                // Wait for all tasks to complete
+                return (await Task.WhenAll(tasks)).All(successful => successful);
+            }
+            catch (Exception ex)
+            {
+                Logger.Error(ex, "An error occurred during backup.");
+                return false;
+            }
+        }
+
+        public override Task<bool> KillAsync()
+        {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(KillAsync));
+
+            _killed = true;
+            return Task.FromResult(true);
+        }
+
+        public override void Dispose()
+        {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(Dispose));
+            // This plugin doesn't have any resources to dispose.
+        }
+
+        private IList<BackupArchive> GetBackupArchives(IDictionary<string, string> commandLineArgs)
+        {
+            Logger.TraceMethod(nameof(BackupPlugin), nameof(GetBackupArchives), nameof(commandLineArgs), commandLineArgs);
 
             var archiveId = (commandLineArgs != null && commandLineArgs.ContainsKey("archive") ? commandLineArgs["archive"] : null)
                          ?? (commandLineArgs != null && commandLineArgs.ContainsKey("backup") ? commandLineArgs["backup"] : null);
@@ -34,61 +102,14 @@ namespace Curupira.Plugins.Backup
                 if (selectedArchive == null)
                 {
                     Logger.Fatal(FormatLogMessage(nameof(ExecuteAsync), $"Archive '{archiveId}' not found."));
-                    return false;
+                    return null;
                 }
             }
 
-            var archives = selectedArchive != null ? new[] { selectedArchive } : Config.Archives;
-
-            try
-            {
-                foreach (var archive in archives)
-                {
-                    if (_killed)
-                    {
-                        Logger.Info(FormatLogMessage(nameof(Execute), "Plugin execution cancelled."));
-                        return false;
-                    }
-
-                    string zipFileName = $"{DateTime.Now:yyyyMMddhhmmss}-{archive.Id}.zip";
-                    string zipFilePath = Path.Combine(Config.Destination, zipFileName);
-
-                    // Enforce backup limit if specified
-                    EnforceBackupLimit(archive.Id);
-
-                    using (var zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
-                    {
-                        // Add files and directories to the zip archive
-                        AddItemsToZip(zipArchive, archive);
-                    }
-
-                    Logger.Info($"Backup '{archive.Id}' created successfully at '{zipFilePath}'.");
-                }
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Error(ex, "An error occurred during backup.");
-                return false;
-            }
+            return selectedArchive != null ? new[] { selectedArchive } : Config.Archives;
         }
 
-        public override bool Kill()
-        {
-            Logger.TraceMethod(nameof(BackupPlugin), nameof(Kill));
-
-            _killed = true;
-            return true;
-        }
-
-        public override void Dispose()
-        {
-            Logger.TraceMethod(nameof(BackupPlugin), nameof(Dispose));
-            // This plugin doesn't have any resources to dispose.
-        }
-
-        private void AddItemsToZip(ZipArchive zipArchive, BackupArchive backupArchive)
+        private bool AddItemsToZip(ZipArchive zipArchive, BackupArchive backupArchive)
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(AddItemsToZip), nameof(zipArchive), zipArchive, nameof(backupArchive), backupArchive);
 
@@ -100,31 +121,51 @@ namespace Curupira.Plugins.Backup
             {
                 if (_killed)
                 {
-                    break;
+                    Logger.Info(FormatLogMessage(nameof(AddItemsToZip), "Plugin execution cancelled."));
+                    return false;
                 }
-                AddItemToZip(zipArchive, itemPath, backupArchive.Root);
-                processedEntries++;
-                int percentage = (int)((double)processedEntries / totalEntries * 100);
-                OnProgress(new PluginProgressEventArgs(percentage, $"Archive: {backupArchive.Id}. Processed {processedEntries} of {totalEntries} directories"));
+                if (AddItemToZip(zipArchive, itemPath, backupArchive.Root))
+                {
+                    processedEntries++;
+                    int percentage = (int)((double)processedEntries / totalEntries * 100);
+                    OnProgress(new PluginProgressEventArgs(percentage, $"Archive: {backupArchive.Id}. Processed {processedEntries} of {totalEntries} directories"));
+                }
+                else
+                {
+                    OnProgress(new PluginProgressEventArgs(100, $"Archive: {backupArchive.Id}. Error."));
+                    return false;
+                }
             }
+
+            return true;
         }
 
-        private void AddItemToZip(ZipArchive zipArchive, string itemPath, string rootPath)
+        public virtual bool AddItemToZip(ZipArchive zipArchive, string itemPath, string rootPath)
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(AddItemToZip), nameof(zipArchive), zipArchive, nameof(itemPath), itemPath, nameof(rootPath), rootPath);
 
             string entryName = itemPath.Substring(rootPath.Length + 1); // Relative path within the zip
 
-            if (File.Exists(itemPath))
+            try
             {
-                zipArchive.CreateEntryFromFile(itemPath, entryName);
-                Logger.Debug($"Added file to zip: {entryName}");
+                if (File.Exists(itemPath))
+                {
+                    zipArchive.CreateEntryFromFile(itemPath, entryName);
+                    Logger.Debug($"Added file to zip: {entryName}");
+                }
+                else if (Directory.Exists(itemPath))
+                {
+                    zipArchive.CreateEntry($"{entryName}/"); // Create a directory entry
+                    Logger.Debug($"Added directory to zip: {entryName}");
+                }
             }
-            else if (Directory.Exists(itemPath))
+            catch (Exception ex)
             {
-                zipArchive.CreateEntry($"{entryName}/"); // Create a directory entry
-                Logger.Debug($"Added directory to zip: {entryName}");
+                Logger.Error(ex, $"Error to add '{itemPath}' to the zip file.");
+                return false;
             }
+
+            return true;
         }
 
         private IList<string> GetFilesToBeAddedToZip(BackupArchive archive)
@@ -165,17 +206,28 @@ namespace Curupira.Plugins.Backup
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(EnforceBackupLimit), nameof(backupId), backupId);
 
+            // Only enforce the limit if it is greater than 0
             if (Config.Limit > 0)
             {
+                // Get all existing backups for the current backupId
                 string[] existingBackups = Directory.GetFiles(Config.Destination, $"*-{backupId}.zip");
-                if (existingBackups.Length >= Config.Limit)
+
+                // If there are more backups than (Limit - 1), delete the oldest files to respect the limit
+                int excessFileCount = existingBackups.Length - (Config.Limit - 1);
+
+                // Delete the excess files, i.e., enough files to keep only (Limit - 1) backups
+                if (excessFileCount > 0)
                 {
-                    // Delete the oldest backup file
-                    string oldestBackup = existingBackups.OrderBy(f => File.GetCreationTime(f)).FirstOrDefault();
-                    if (oldestBackup != null)
+                    // Find the oldest files based on their creation time
+                    var filesToDelete = existingBackups
+                        .OrderBy(f => File.GetCreationTime(f)) // Order files by creation time (oldest first)
+                        .Take(excessFileCount) // Select the number of excess files to delete
+                        .ToList();
+
+                    foreach (var file in filesToDelete)
                     {
-                        File.Delete(oldestBackup);
-                        Logger.Info($"Deleted oldest backup for '{backupId}': {oldestBackup}");
+                        File.Delete(file);
+                        Logger.Info($"Deleted oldest backup for '{backupId}': {file}");
                     }
                 }
             }

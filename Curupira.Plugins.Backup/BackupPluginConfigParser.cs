@@ -1,5 +1,6 @@
 ﻿using Curupira.Plugins.Contract;
 using System;
+using System.IO;
 using System.Xml;
 
 namespace Curupira.Plugins.Backup
@@ -27,52 +28,83 @@ namespace Curupira.Plugins.Backup
                 throw new ArgumentNullException(nameof(xmlConfig));
             }
 
-            var pluginConfig = new BackupPluginConfig();
+            var namespaceUri = xmlConfig.NamespaceURI;
 
-            // Get the namespace URI from the XML document
-            string namespaceUri = xmlConfig.NamespaceURI;
+            var settingsNode = xmlConfig.SelectSingleNode($"//*[local-name()='settings' and namespace-uri()='{namespaceUri}']");
 
-            // Read settings
-            XmlNode settingsNode = xmlConfig.SelectSingleNode($"//*[local-name()='settings' and namespace-uri()='{namespaceUri}']");
-            pluginConfig.Destination = settingsNode?.Attributes["destination"]?.Value;
-            if (string.IsNullOrEmpty(pluginConfig.Destination))
-            {
-                throw new InvalidOperationException("Missing or empty 'destination' attribute in settings.");
-            }
+            var pluginConfig = new BackupPluginConfig(
+                destination: GetGlobalDestinationDir(settingsNode),
+                limit: GetBackupsLimit(settingsNode)
+            );
 
-            string limitStr = settingsNode?.Attributes["limit"]?.Value;
-            if (!string.IsNullOrEmpty(limitStr))
-            {
-                if (!int.TryParse(limitStr, out int localLimit) || localLimit <= 0)
-                {
-                    throw new InvalidOperationException("Invalid 'limit' attribute in settings. It must be a positive integer.");
-                }
-                pluginConfig.Limit = localLimit;
-            }
-
-            // Read backup packages
-            XmlNodeList backupNodes = xmlConfig.SelectNodes($"//*[local-name()='backups']/*[local-name()='backup' and namespace-uri()='{namespaceUri}']");
-            if (backupNodes != null)
-            {
-                foreach (XmlNode backupNode in backupNodes)
-                {
-                    string id = backupNode.Attributes["id"]?.Value;
-                    string root = backupNode.Attributes["root"]?.Value;
-                    if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(root))
-                        throw new InvalidOperationException("Missing or empty 'id' or 'root' attribute in a backup element.");
-
-                    var archive = new BackupArchive(id, root);
-
-                    foreach (XmlNode removeNode in backupNode.SelectNodes($"*[local-name()='remove' and namespace-uri()='{namespaceUri}']"))
-                    {
-                        archive.Exclusions.Add(removeNode.InnerText);
-                    }
-
-                    pluginConfig.Archives.Add(archive);
-                }
-            }
+            ParseBackupPackages(xmlConfig, pluginConfig, namespaceUri);
 
             return pluginConfig;
+        }
+
+        private static string GetGlobalDestinationDir(XmlNode settingsNode)
+        {
+            var destination = settingsNode?.Attributes["destination"]?.Value;
+
+            if (!string.IsNullOrEmpty(destination) && !Directory.Exists(destination))
+            {
+                throw new DirectoryNotFoundException($"Invalid directory: '{destination}'");
+            }
+
+            return destination;
+        }
+
+        private static int GetBackupsLimit(XmlNode settingsNode)
+        {
+            var limitStr = settingsNode?.Attributes["limit"]?.Value;
+            
+            if (string.IsNullOrEmpty(limitStr))
+            {
+                return 0;
+            }
+
+            if (!int.TryParse(limitStr, out int localLimit) || localLimit <= 0)
+            {
+                throw new InvalidOperationException("Invalid 'limit' attribute in settings. It must be a positive integer.");
+            }
+
+            return localLimit;
+        }
+
+        private static void ParseBackupPackages(XmlElement xmlConfig, BackupPluginConfig pluginConfig, string namespaceUri)
+        {
+            var backupNodes = xmlConfig.SelectNodes($"//*[local-name()='backups']/*[local-name()='backup' and namespace-uri()='{namespaceUri}']");
+
+            if (backupNodes == null || backupNodes.Count == 0)
+            {
+                return;
+            }
+
+            foreach (XmlNode backupNode in backupNodes)
+            {
+                string id = backupNode.Attributes["id"]?.Value;
+                string root = backupNode.Attributes["root"]?.Value;
+                string destination = backupNode.Attributes["destination"]?.Value;
+
+                if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(root))
+                {
+                    throw new InvalidOperationException("Missing or empty 'id' or 'root' attribute in a backup element.");
+                }
+
+                if (string.IsNullOrWhiteSpace(pluginConfig.Destination) && string.IsNullOrWhiteSpace(destination))
+                {
+                    throw new InvalidOperationException("You need to specify the destination directory either globally in <settings> or locally in <backup>.");
+                }
+
+                var archive = new BackupArchive(id, root, destination);
+
+                foreach (XmlNode removeNode in backupNode.SelectNodes($"*[local-name()='remove' and namespace-uri()='{namespaceUri}']"))
+                {
+                    archive.Exclusions.Add(removeNode.InnerText);
+                }
+
+                pluginConfig.Archives.Add(archive);
+            }
         }
     }
 }

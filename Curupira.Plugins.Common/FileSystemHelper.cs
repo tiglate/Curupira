@@ -43,8 +43,13 @@ namespace Curupira.Plugins.Common
             {
                 throw new ArgumentNullException(nameof(path));
             }
+            path = path.TrimEnd('/', '\\');
             int lastSeparatorIndex = path.LastIndexOf(System.IO.Path.DirectorySeparatorChar);
             if (path.StartsWith(@"\\") && lastSeparatorIndex <= 2)
+            {
+                return path;
+            }
+            if (lastSeparatorIndex == -1 && path.EndsWith(":", StringComparison.Ordinal))
             {
                 return path;
             }

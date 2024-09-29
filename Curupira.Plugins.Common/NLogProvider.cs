@@ -10,7 +10,7 @@ namespace Curupira.Plugins.Common
     /// </summary>
     public class NLogProvider : ILogProvider
     {
-        private readonly Logger _logger;
+        public Logger LoggerImpl { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the NLogProvider class.
@@ -18,42 +18,51 @@ namespace Curupira.Plugins.Common
         /// <param name="loggerName">The name of the NLog logger to use. If null or empty, the default logger will be used.</param>
         public NLogProvider(string loggerName = null)
         {
-            _logger = string.IsNullOrEmpty(loggerName) ? LogManager.GetCurrentClassLogger() : LogManager.GetLogger(loggerName);
+            LoggerImpl = string.IsNullOrEmpty(loggerName) ? LogManager.GetCurrentClassLogger() : LogManager.GetLogger(loggerName);
         }
 
-        public void Trace(string message, params object[] args) => _logger.Trace(message, args);
+        /// <summary>
+        /// Initializes a new instance of the NLogProvider class.
+        /// </summary>
+        /// <param name="logger">Instance of NLog.Logger class.</param>
+        public NLogProvider(Logger logger)
+        {
+            LoggerImpl = logger;
+        }
 
-        public void Debug(string message, params object[] args) => _logger.Debug(message, args);
+        public virtual void Trace(string message, params object[] args) => LoggerImpl.Trace(message, args);
 
-        public void Info(string message, params object[] args) => _logger.Info(message, args);
+        public virtual void Debug(string message, params object[] args) => LoggerImpl.Debug(message, args);
 
-        public void Warn(string message, params object[] args) => _logger.Warn(message, args);
+        public virtual void Info(string message, params object[] args) => LoggerImpl.Info(message, args);
 
-        public void Error(string message, params object[] args) => _logger.Error(message, args);
+        public virtual void Warn(string message, params object[] args) => LoggerImpl.Warn(message, args);
 
-        public void Fatal(string message, params object[] args) => _logger.Fatal(message, args);
+        public virtual void Error(string message, params object[] args) => LoggerImpl.Error(message, args);
 
-        public void Fatal(Exception exception, string message = null, params object[] args)
+        public virtual void Fatal(string message, params object[] args) => LoggerImpl.Fatal(message, args);
+
+        public virtual void Fatal(Exception exception, string message = null, params object[] args)
         {
             if (string.IsNullOrEmpty(message))
             {
-                _logger.Fatal(exception);
+                LoggerImpl.Fatal(exception);
             }
             else
             {
-                _logger.Fatal(exception, message, args);
+                LoggerImpl.Fatal(exception, message, args);
             }
         }
 
-        public void Error(Exception exception, string message = null, params object[] args)
+        public virtual void Error(Exception exception, string message = null, params object[] args)
         {
             if (string.IsNullOrEmpty(message))
             {
-                _logger.Error(exception);
+                LoggerImpl.Error(exception);
             }
             else
             {
-                _logger.Error(exception, message, args);
+                LoggerImpl.Error(exception, message, args);
             }
         }
 
@@ -64,7 +73,7 @@ namespace Curupira.Plugins.Common
         /// <param name="methodName">The name of the method being entered.</param>
         /// <param name="parameters">An array of parameter names and their corresponding values, 
         /// alternating between name and value.</param>
-        public void TraceMethod(string className, string methodName, params object[] parameters)
+        public virtual void TraceMethod(string className, string methodName, params object[] parameters)
         {
             var logMessage = new System.Text.StringBuilder($"{className}.{methodName}(");
             for (int i = 0; i < parameters.Length; i += 2)

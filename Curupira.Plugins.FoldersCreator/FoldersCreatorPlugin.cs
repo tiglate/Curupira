@@ -20,7 +20,7 @@ namespace Curupira.Plugins.FoldersCreator
         {
         }
 
-        public override bool Execute(IDictionary<string, string> commandLineArgs)
+        protected override bool Execute(IDictionary<string, string> commandLineArgs)
         {
             Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
 
@@ -92,7 +92,7 @@ namespace Curupira.Plugins.FoldersCreator
             return success;
         }
 
-        public override bool Kill()
+        protected override bool Kill()
         {
             Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Kill));
 
