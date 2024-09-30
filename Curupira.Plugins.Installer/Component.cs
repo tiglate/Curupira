@@ -13,8 +13,11 @@ namespace Curupira.Plugins.Installer
 
         public IList<string> RemoveItems { get; private set; }
 
-        public Component()
+        public Component(string id, ComponentType type, ComponentAction action)
         {
+            Id = id;
+            Type = type;
+            Action = action;
             Parameters = new Dictionary<string, string>();
             RemoveItems = new List<string>();
         }

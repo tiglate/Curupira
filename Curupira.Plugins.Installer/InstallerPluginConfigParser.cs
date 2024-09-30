@@ -68,12 +68,11 @@ namespace Curupira.Plugins.Installer
                         action = parsedAction;
                     }
 
-                    var component = new Component
-                    {
-                        Id = componentId,
-                        Type = type,
-                        Action = action ?? ComponentAction.None
-                    };
+                    var component = new Component(
+                        id: componentId,
+                        type: type,
+                        action: action ?? ComponentAction.None
+                    );
 
                     foreach (XmlNode paramNode in componentNode.SelectNodes($"*[local-name()='param' and namespace-uri()='{namespaceUri}']"))
                     {
