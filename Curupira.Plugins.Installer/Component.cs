@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Curupira.Plugins.Installer
 {
+    [ExcludeFromCodeCoverage]
     public class Component
     {
         public string Id { get; set; }

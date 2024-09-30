@@ -1,5 +1,8 @@
-﻿namespace Curupira.Plugins.ServiceManager
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Curupira.Plugins.ServiceManager
 {
+    [ExcludeFromCodeCoverage]
     public class ServiceAction
     {
         public string ServiceName { get; set; }

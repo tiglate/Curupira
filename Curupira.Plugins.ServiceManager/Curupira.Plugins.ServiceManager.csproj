@@ -45,6 +45,12 @@
   <ItemGroup>
     <Compile Include="ActionEnum.cs" />
     <Compile Include="Bundle.cs" />
+    <Compile Include="IProcessManager.cs" />
+    <Compile Include="IServiceController.cs" />
+    <Compile Include="IServiceControllerFactory.cs" />
+    <Compile Include="MsServiceController.cs" />
+    <Compile Include="MsServiceControllerFactory.cs" />
+    <Compile Include="ProcessManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceAction.cs" />
     <Compile Include="ServiceManagerPlugin.cs" />

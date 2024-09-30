@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Management;
 using System.ServiceProcess;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
@@ -12,10 +9,14 @@ namespace Curupira.Plugins.ServiceManager
     public class ServiceManagerPlugin : BasePlugin<ServiceManagerPluginConfig>
     {
         private volatile bool _killed;
+        private readonly IServiceControllerFactory _serviceControllerFactory;
+        private readonly IProcessManager _processManager;
 
-        public ServiceManagerPlugin(ILogProvider logger, IPluginConfigParser<ServiceManagerPluginConfig> configParser)
+        public ServiceManagerPlugin(ILogProvider logger, IPluginConfigParser<ServiceManagerPluginConfig> configParser, IServiceControllerFactory serviceControllerFactory, IProcessManager processManager)
             : base("ServiceManagerPlugin", logger, configParser)
         {
+            _serviceControllerFactory = serviceControllerFactory;
+            _processManager = processManager;
         }
 
         public override bool Execute(IDictionary<string, string> commandLineArgs)
@@ -52,7 +53,7 @@ namespace Curupira.Plugins.ServiceManager
 
                 try
                 {
-                    using (var serviceController = new ServiceController(serviceAction.ServiceName))
+                    using (var serviceController = _serviceControllerFactory.Build(serviceAction.ServiceName))
                     {
                         var auxSuccess = true;
                         switch (serviceAction.Action)
@@ -90,7 +91,7 @@ namespace Curupira.Plugins.ServiceManager
             return success;
         }
 
-        private bool StartService(ServiceAction serviceAction, ServiceController serviceController)
+        protected virtual bool StartService(ServiceAction serviceAction, IServiceController serviceController)
         {
             Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(StartService), nameof(serviceAction), serviceAction, nameof(serviceController), serviceController);
 
@@ -108,7 +109,7 @@ namespace Curupira.Plugins.ServiceManager
             return true;
         }
 
-        private bool StopService(ServiceAction serviceAction, ServiceController serviceController)
+        protected virtual bool StopService(ServiceAction serviceAction, IServiceController serviceController)
         {
             Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(StopService), nameof(serviceAction), serviceAction, nameof(serviceController), serviceController);
 
@@ -125,7 +126,7 @@ namespace Curupira.Plugins.ServiceManager
             return true; //We may change that in the future
         }
 
-        private bool StopOrKillService(ServiceAction serviceAction, ServiceController serviceController)
+        protected virtual bool StopOrKillService(ServiceAction serviceAction, IServiceController serviceController)
         {
             Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(StopOrKillService), nameof(serviceAction), serviceAction, nameof(serviceController), serviceController);
 
@@ -139,12 +140,12 @@ namespace Curupira.Plugins.ServiceManager
 
                     Logger.Info($"Service '{serviceAction.ServiceName}' stopped successfully.");
                 }
-                catch (System.TimeoutException)
+                catch (System.ServiceProcess.TimeoutException)
                 {
                     Logger.Warn($"Service '{serviceAction.ServiceName}' did not stop within the timeout. Attempting to kill.");
 
                     // If graceful stop fails, try to kill the associated process
-                    if (TryKillServiceProcess(serviceAction.ServiceName))
+                    if (TryKillServiceProcess(serviceController))
                     {
                         Logger.Info($"Service '{serviceAction.ServiceName}' process killed successfully.");
                     }
@@ -163,7 +164,7 @@ namespace Curupira.Plugins.ServiceManager
             return true;
         }
 
-        private bool GetServiceStatus(string logFile, ServiceController serviceController)
+        protected virtual bool GetServiceStatus(string logFile, IServiceController serviceController)
         {
             Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(GetServiceStatus), nameof(logFile), logFile, nameof(serviceController), serviceController);
 
@@ -176,7 +177,7 @@ namespace Curupira.Plugins.ServiceManager
             {
                 var now = DateTime.Now.ToString("yyyy-MM-dd hh:mm:ss");
                 var statusLogEntry = $"[{now}] {serviceController.ServiceName}: {serviceController.Status}{Environment.NewLine}";
-                System.IO.File.AppendAllText(string.Format(logFile, DateTime.Now), statusLogEntry);
+                WriteLogFile(string.Format(logFile, DateTime.Now), statusLogEntry);
             }
             catch (System.IO.IOException ex)
             {
@@ -191,17 +192,21 @@ namespace Curupira.Plugins.ServiceManager
             return true;
         }
 
-        private bool TryKillServiceProcess(string serviceName)
+        protected virtual void WriteLogFile(string logFile, string content)
         {
-            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(TryKillServiceProcess), nameof(serviceName), serviceName);
+            System.IO.File.AppendAllText(logFile, content);
+        }
+
+        protected virtual bool TryKillServiceProcess(IServiceController serviceController)
+        {
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(TryKillServiceProcess), nameof(serviceController), serviceController);
 
             try
             {
-                var processId = GetServiceProcessId(serviceName);
+                var processId = serviceController.ProcessId;
                 if (processId > 0)
                 {
-                    var process = Process.GetProcessById(processId);
-                    process.Kill();
+                    _processManager.Kill(serviceController.ProcessId);
                     return true;
                 }
                 else
@@ -211,32 +216,9 @@ namespace Curupira.Plugins.ServiceManager
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, $"Error trying to kill the process for service '{serviceName}'.");
+                Logger.Error(ex, $"Error trying to kill the process for service '{serviceController.ServiceName}'.");
                 return false;
             }
-        }
-
-        public int GetServiceProcessId(string serviceName)
-        {
-            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(GetServiceProcessId), nameof(serviceName), serviceName);
-
-            try
-            {
-                string query = $"SELECT ProcessId FROM Win32_Service WHERE Name = '{serviceName}'";
-                using (var searcher = new ManagementObjectSearcher(query))
-                {
-                    foreach (var obj in searcher.Get().Cast<ManagementObject>())
-                    {
-                        return Convert.ToInt32(obj["ProcessId"]);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error retrieving process ID: {ex.Message}");
-            }
-
-            return -1; // Return -1 if not found or any error occurs
         }
 
         public override bool Kill()

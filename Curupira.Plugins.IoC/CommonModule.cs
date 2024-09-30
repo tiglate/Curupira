@@ -66,6 +66,12 @@ namespace Curupira.Plugins.IoC
 
         private void RegisterServiceManager(ContainerBuilder builder)
         {
+            builder.RegisterType<MsServiceControllerFactory>()
+                .As<IServiceControllerFactory>();
+
+            builder.RegisterType<ProcessManager>()
+                .As<IProcessManager>();
+
             builder.RegisterType<ServiceManagerPluginConfigParser>()
                 .As<IPluginConfigParser<ServiceManagerPluginConfig>>()
                 .WithParameter("configFile", Path.Combine(_configDir, "service-manager-plugin.xml"))
