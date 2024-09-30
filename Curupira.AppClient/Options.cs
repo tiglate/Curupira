@@ -1,8 +1,10 @@
 ﻿using CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Curupira.AppClient
 {
+    [ExcludeFromCodeCoverage]
     public class Options
     {
         [Option('p', "plugin", Required = true, HelpText = "The name of the plugin to execute.")]

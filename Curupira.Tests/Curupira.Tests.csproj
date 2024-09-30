@@ -136,6 +136,7 @@
     <Compile Include="Plugins\FoldersCreator\FoldersCreatorPluginTests.cs" />
     <Compile Include="Plugins\FoldersCreator\FoldersCreatorPluginWithDelay.cs" />
     <Compile Include="Plugins\Installer\InstallerPluginConfigParserTests.cs" />
+    <Compile Include="Plugins\Installer\InstallerPluginTests.cs" />
     <Compile Include="Plugins\ServiceManager\ServiceManagerPluginConfigParserTests.cs" />
     <Compile Include="Plugins\ServiceManager\ServiceManagerPluginTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

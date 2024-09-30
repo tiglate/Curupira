@@ -1,8 +1,10 @@
 ﻿using Autofac;
 using Curupira.Plugins.IoC;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Curupira.WindowsService.Infra.IoC
 {
+    [ExcludeFromCodeCoverage]
     public static class AutofacContainerBuilder
     {
         public static IContainer Configure()

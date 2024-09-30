@@ -1,5 +1,8 @@
-﻿namespace Curupira.WindowsService.Model
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Curupira.WindowsService.Model
 {
+    [ExcludeFromCodeCoverage]
     public class TaskModel
     {
         public string Name { get; set; }

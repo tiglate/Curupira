@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -14,17 +13,12 @@ namespace Curupira.Plugins.Installer
     public class InstallerPlugin : BasePlugin<InstallerPluginConfig>
     {
         private volatile bool _killed;
+        private readonly IProcessExecutor _processExecutor;
 
-        public InstallerPlugin(ILogProvider logger, IPluginConfigParser<InstallerPluginConfig> configParser)
+        public InstallerPlugin(ILogProvider logger, IPluginConfigParser<InstallerPluginConfig> configParser, IProcessExecutor processExecutor)
             : base("Installer Plugin", logger, configParser)
         {
-        }
-
-        public override bool Execute(IDictionary<string, string> commandLineArgs)
-        {
-            Logger.TraceMethod(nameof(InstallerPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
-
-            return ExecuteAsync(commandLineArgs).GetAwaiter().GetResult();
+            _processExecutor = processExecutor;
         }
 
         public override async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
@@ -32,32 +26,16 @@ namespace Curupira.Plugins.Installer
             Logger.TraceMethod(nameof(InstallerPlugin), nameof(ExecuteAsync), nameof(commandLineArgs), commandLineArgs);
 
             _killed = false;
-            var componentId = commandLineArgs != null && commandLineArgs.ContainsKey("component") ? commandLineArgs["component"] : null;
-            Component selectedComponent = null;
 
-            if (!string.IsNullOrEmpty(componentId))
+            var components = GetComponents(commandLineArgs);
+
+            if (components == null)
             {
-                selectedComponent = Config.Components.FirstOrDefault(p => p.Id.Equals(componentId, StringComparison.CurrentCultureIgnoreCase));
-
-                if (selectedComponent == null)
-                {
-                    Logger.Fatal(FormatLogMessage(nameof(ExecuteAsync), $"Component '{componentId}' not found."));
-                    return false;
-                }
+                return false;
             }
 
-            var ignoreUnauthorizedAccess = false;
-
-            if (commandLineArgs.TryGetValue("ignoreUnauthorizedAccess", out string ignoreUnauthorizedAccessString))
-            {
-                if (!string.IsNullOrEmpty(ignoreUnauthorizedAccessString))
-                {
-                    ignoreUnauthorizedAccess = bool.Parse(ignoreUnauthorizedAccessString.Trim().ToLower());
-                }
-            }
-
-            bool sucess = true;
-            var components = selectedComponent != null ? new[] { selectedComponent } : Config.Components;
+            var ignoreUnauthorizedAccess = GetIgnoreUnauthorizedAccessFlag(commandLineArgs);
+            var sucess = true;
             var processedComponents = 0;
             var totalComponents = components.Count;
 
@@ -106,7 +84,33 @@ namespace Curupira.Plugins.Installer
             return sucess;
         }
 
-        private bool HandleZipComponent(Component component, bool ignoreUnauthorizedAccess = false)
+        private IList<Component> GetComponents(IDictionary<string, string> commandLineArgs)
+        {
+            var componentId = commandLineArgs != null && commandLineArgs.ContainsKey("component") ? commandLineArgs["component"] : null;
+            Component selectedComponent = null;
+
+            if (!string.IsNullOrEmpty(componentId))
+            {
+                selectedComponent = Config.Components.FirstOrDefault(p => p.Id.Equals(componentId, StringComparison.CurrentCultureIgnoreCase));
+
+                if (selectedComponent == null)
+                {
+                    Logger.Fatal(FormatLogMessage(nameof(ExecuteAsync), $"Component '{componentId}' not found."));
+                    return null;
+                }
+            }
+
+            return selectedComponent != null ? new[] { selectedComponent } : Config.Components;
+        }
+
+        private bool GetIgnoreUnauthorizedAccessFlag(IDictionary<string, string> commandLineArgs)
+        {
+            return commandLineArgs.TryGetValue("ignoreUnauthorizedAccess", out string ignoreUnauthorizedAccessString)
+                ? bool.TryParse(ignoreUnauthorizedAccessString, out bool result) && result
+                : false;
+        }
+
+        protected virtual bool HandleZipComponent(Component component, bool ignoreUnauthorizedAccess = false)
         {
             Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleZipComponent), nameof(component), component, nameof(ignoreUnauthorizedAccess), ignoreUnauthorizedAccess);
 
@@ -159,7 +163,7 @@ namespace Curupira.Plugins.Installer
                         {
                             try
                             {
-                                entry.ExtractToFile(destinationPath, true); // Overwrite existing files
+                                ExtractFile(entry, destinationPath, true); // Overwrite existing files
                             }
                             catch (UnauthorizedAccessException)
                             {
@@ -168,7 +172,7 @@ namespace Curupira.Plugins.Installer
                         }
                         else
                         {
-                            entry.ExtractToFile(destinationPath, true); // Overwrite existing files
+                            ExtractFile(entry, destinationPath, true); // Overwrite existing files
                         }
                     }
 
@@ -208,12 +212,11 @@ namespace Curupira.Plugins.Installer
             return entry.FullName.Length > 0 && (entry.FullName[entry.FullName.Length - 1] == '/' || entry.FullName[entry.FullName.Length - 1] == '\\');
         }
 
-        private async Task<bool> HandleMsiComponentAsync(Component component)
+        protected virtual async Task<bool> HandleMsiComponentAsync(Component component)
         {
             Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleMsiComponentAsync), nameof(component), component);
 
-            string sourceFile = component.Parameters["SourceFile"];
-            if (string.IsNullOrEmpty(sourceFile))
+            if (!component.Parameters.TryGetValue("SourceFile", out string sourceFile))
             {
                 throw new InvalidOperationException("Missing or empty 'SourceFile' parameter for msi component.");
             }
@@ -221,107 +224,61 @@ namespace Curupira.Plugins.Installer
             string action = component.Action == ComponentAction.Install ? "/i" : "/x";
             string additionalParams = component.Parameters.ContainsKey("Params") ? component.Parameters["Params"] : "";
 
-            string command = $"msiexec.exe {action} \"{sourceFile}\" {additionalParams}";
+            var exitCode = await _processExecutor.ExecuteAsync("msiexec.exe", $"{action} \"{sourceFile}\" {additionalParams}", new FileInfo(sourceFile).Directory.FullName);
 
-            Logger.Info($"Executing MSI command: {command}");
-
-            using (var process = new Process())
+            if (exitCode == 0)
             {
-                process.StartInfo = new ProcessStartInfo
-                {
-                    FileName = "msiexec.exe",
-                    WorkingDirectory = new FileInfo(sourceFile).Directory.FullName,
-                    Arguments = $"{action} \"{sourceFile}\" {additionalParams}",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-
-                process.Start();
-
-                // Read output and error streams asynchronously
-                var outputTask = process.StandardOutput.ReadToEndAsync();
-                var errorTask = process.StandardError.ReadToEndAsync();
-
-                await Task.WhenAll(outputTask, errorTask).ConfigureAwait(false);
-
-                string output = await outputTask;
-                string error = await errorTask;
-
-                if (process.ExitCode == 0)
-                {
-                    Logger.Info($"MSI execution completed successfully. Output: {output}");
-                }
-                else
-                {
-                    Logger.Error($"MSI execution failed with exit code {process.ExitCode}. Error: {error}");
-                    return false;
-                }
+                Logger.Info($"MSI execution completed successfully.");
+                return true;
             }
-
-            return true;
+            else
+            {
+                Logger.Error($"MSI execution failed with exit code {exitCode}.");
+                return false;
+            }
         }
 
-        private async Task<bool> HandleBatOrExeComponentAsync(Component component)
+        protected virtual async Task<bool> HandleBatOrExeComponentAsync(Component component)
         {
             Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleBatOrExeComponentAsync), nameof(component), component);
 
-            string sourceFile = component.Parameters["SourceFile"];
-            if (string.IsNullOrEmpty(sourceFile))
+            if (!component.Parameters.TryGetValue("SourceFile", out string sourceFile))
             {
                 throw new InvalidOperationException("Missing or empty 'SourceFile' parameter for bat/exe component.");
             }
 
             string additionalParams = component.Parameters.ContainsKey("Params") ? component.Parameters["Params"] : "";
 
+            // Build the command for .bat or .exe
             string command = $"\"{sourceFile}\" {additionalParams}";
 
             Logger.Info($"Executing command: {command}");
 
-            using (var process = new Process())
+            var exitCode = await _processExecutor.ExecuteAsync(sourceFile, additionalParams, new FileInfo(sourceFile).Directory.FullName);
+
+            if (exitCode == 0)
             {
-                process.StartInfo = new ProcessStartInfo
-                {
-                    FileName = sourceFile,
-                    WorkingDirectory = new FileInfo(sourceFile).Directory.FullName,
-                    Arguments = additionalParams,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-
-                process.Start();
-
-                var outputTask = process.StandardOutput.ReadToEndAsync();
-                var errorTask = process.StandardError.ReadToEndAsync();
-
-                await Task.WhenAll(outputTask, errorTask).ConfigureAwait(false);
-
-                string output = await outputTask;
-                string error = await errorTask;
-
-                if (process.ExitCode == 0)
-                {
-                    Logger.Info($"Execution completed successfully. Output: {output}");
-                }
-                else
-                {
-                    Logger.Error($"Execution failed with exit code {process.ExitCode}. Error: {error}");
-                    return false;
-                }
+                Logger.Info($"Execution completed successfully.");
+                return true;
             }
-
-            return true;
+            else
+            {
+                Logger.Error($"Execution failed with exit code {exitCode}.");
+                return false;
+            }
         }
 
-        public override bool Kill()
+        protected virtual void ExtractFile(ZipArchiveEntry entry, string destinationPath, bool overwrite)
         {
-            Logger.TraceMethod(nameof(InstallerPlugin), nameof(Kill));
+            entry.ExtractToFile(destinationPath, overwrite);
+        }
+
+        public override Task<bool> KillAsync()
+        {
+            Logger.TraceMethod(nameof(InstallerPlugin), nameof(KillAsync));
 
             _killed = true;
-            return true;
+            return Task.FromResult(true);
         }
 
         public override void Dispose()

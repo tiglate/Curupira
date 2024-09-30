@@ -9,9 +9,11 @@ using System;
 using Curupira.Plugins.Common;
 using System.Configuration;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Curupira.Plugins.IoC
 {
+    [ExcludeFromCodeCoverage]
     public class CommonModule : Module
     {
         private readonly string _configDir;
@@ -55,6 +57,10 @@ namespace Curupira.Plugins.IoC
 
         private void RegisterInstallerPlugin(ContainerBuilder builder)
         {
+            builder.RegisterType<ProcessExecutor>()
+                .As<IProcessExecutor>()
+                .SingleInstance();
+
             builder.RegisterType<InstallerPluginConfigParser>()
                 .As<IPluginConfigParser<InstallerPluginConfig>>()
                 .WithParameter("configFile", Path.Combine(_configDir, "Installer-plugin.xml"))

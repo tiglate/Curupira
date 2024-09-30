@@ -49,6 +49,8 @@
     <Compile Include="InstallerPlugin.cs" />
     <Compile Include="InstallerPluginConfig.cs" />
     <Compile Include="InstallerPluginConfigParser.cs" />
+    <Compile Include="IProcessExecutor.cs" />
+    <Compile Include="ProcessExecutor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

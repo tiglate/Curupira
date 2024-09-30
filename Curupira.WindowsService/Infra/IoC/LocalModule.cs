@@ -2,9 +2,11 @@
 using Autofac.Integration.WebApi;
 using Curupira.WindowsService.Service;
 using Curupira.WindowsService.Services;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Curupira.WindowsService.Infra.IoC
 {
+    [ExcludeFromCodeCoverage]
     public class LocalModule : Module
     {
         protected override void Load(ContainerBuilder builder)

@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Curupira.WindowsService.Model
 {
+    [ExcludeFromCodeCoverage]
     public class EventLogModel
     {
         public string Source { get; set; }
