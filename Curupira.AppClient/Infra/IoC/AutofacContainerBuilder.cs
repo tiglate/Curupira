@@ -7,7 +7,7 @@ namespace Curupira.AppClient.Infra.IoC
     [ExcludeFromCodeCoverage]
     public static class AutofacContainerBuilder
     {
-        public static IContainer Configure(Options options = null)
+        public static IContainer Configure()
         {
             var builder = new ContainerBuilder();
             builder.RegisterModule<CommonModule>();

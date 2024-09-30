@@ -10,6 +10,12 @@ namespace Curupira.AppClient.Infra.IoC
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<ProgressBarService>()
+                .As<IProgressBarService>();
+
+            builder.RegisterType<ConsoleService>()
+                .As<IConsoleService>();
+
             builder.RegisterType<PluginExecutor>().As<IPluginExecutor>();
         }
     }

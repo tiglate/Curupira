@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Curupira.Plugins.Contract;
-using ShellProgressBar;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -11,141 +10,182 @@ namespace Curupira.AppClient.Services
     {
         private readonly ILifetimeScope _scope;
         private readonly ILogProvider _logger;
+        private readonly IProgressBarService _progressBarService;
+        private readonly IConsoleService _consoleService;
 
-        public PluginExecutor(ILifetimeScope scope, ILogProvider logger)
+        public PluginExecutor(ILifetimeScope scope, ILogProvider logger, IProgressBarService progressBarService, IConsoleService consoleService)
         {
             _scope = scope;
             _logger = logger;
+            _progressBarService = progressBarService;
+            _consoleService = consoleService;
         }
 
         public async Task<bool> ExecutePluginAsync(Options options)
         {
             _logger.TraceMethod(nameof(PluginExecutor), nameof(ExecutePluginAsync), nameof(options), options);
 
+            if (!options.NoLogo)
+            {
+                ShowBanner();
+            }
+
             if (!_scope.IsRegisteredWithName(options.Plugin, typeof(IPlugin)))
             {
                 var message = $"Plugin '{options.Plugin}' not found!";
-                Console.WriteLine(message);
+                _consoleService.WriteLine(message);
                 _logger.Fatal(message);
                 return false;
             }
 
-            var barSettings = new ProgressBarOptions
+            using (var plugin = _scope.ResolveNamed<IPlugin>(options.Plugin))
             {
-                CollapseWhenFinished = true,
-                EnableTaskBarProgress = true,
-            };
+                if (options.NoProgressBar)
+                {
+                    _consoleService.WriteLine($"Loaded: {plugin.Name}");
+                }
+                else
+                {
+                    _consoleService.WriteCentered($"Loaded: {plugin.Name}");
+                    _consoleService.WriteLine();
+                }
 
-            ProgressBar progressBar = null;
+                if (!TryInitializePlugin(plugin, options.Plugin))
+                {
+                    return false;
+                }
+
+                AttachProgressHandler(plugin, options.NoProgressBar);
+
+                bool success = await TryExecutePluginAsync(plugin, options);
+
+                if (success)
+                {
+                    var message = $"Plugin '{plugin.Name}' executed successfully!";
+                    _consoleService.WriteLine(message);
+                    _logger.Info(message);
+                }
+                else
+                {
+                    var message = $"The execution of '{plugin.Name}' plugin failed.";
+                    _consoleService.WriteLine(message);
+                    _logger.Info(message);
+                    _logger.Error(message);
+                }
+
+                return success;
+            }
+        }
+
+        protected virtual void ShowBanner()
+        {
+            _logger.TraceMethod(nameof(PluginExecutor), nameof(ShowBanner));
+
+            _consoleService.Clear();
+            _consoleService.WriteLine();
+            _consoleService.WriteCentered(@" ██████╗██╗   ██╗██████╗ ██╗   ██╗██████╗ ██╗██████╗  █████╗ ");
+            _consoleService.WriteCentered(@"██╔════╝██║   ██║██╔══██╗██║   ██║██╔══██╗██║██╔══██╗██╔══██╗");
+            _consoleService.WriteCentered(@"██║     ██║   ██║██████╔╝██║   ██║██████╔╝██║██████╔╝███████║");
+            _consoleService.WriteCentered(@"██║     ██║   ██║██╔══██╗██║   ██║██╔═══╝ ██║██╔══██╗██╔══██║");
+            _consoleService.WriteCentered(@"╚██████╗╚██████╔╝██║  ██║╚██████╔╝██║     ██║██║  ██║██║  ██║");
+            _consoleService.WriteCentered(@" ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝");
+            _consoleService.WriteCentered(@"                                                             ");
+        }
+
+        protected virtual void AttachProgressHandler(IPlugin plugin, bool noProgressBar)
+        {
+            _logger.TraceMethod(nameof(PluginExecutor), nameof(AttachProgressHandler), nameof(plugin), plugin, nameof(noProgressBar), noProgressBar);
+
+            if (noProgressBar)
+            {
+                var lastReportedProgress = -1;
+                plugin.Progress += (sender, e) =>
+                {
+                    int currentProgress = (int)Math.Floor(e.Percentage / 10.0) * 10;
+
+                    if (currentProgress > lastReportedProgress)
+                    {
+                        _logger.Info($"[{currentProgress}%] {e.Message}");
+                        lastReportedProgress = currentProgress == 100 ? -1 : currentProgress;
+                    }
+                };
+            }
+            else
+            {
+                _progressBarService.Init(10000, "Loading");
+
+                plugin.Progress += (sender, e) =>
+                {
+                    _progressBarService.SetMessage(e.Message);
+                    _progressBarService.ReportProgress(e.Percentage / 100f);
+                };
+
+                _progressBarService.SetMessage($"Loading plugin: {plugin.Name}...");
+            }
+        }
+
+        protected virtual bool TryInitializePlugin(IPlugin plugin, string pluginName)
+        {
+            _logger.TraceMethod(nameof(PluginExecutor), nameof(TryInitializePlugin), nameof(plugin), plugin, nameof(pluginName), pluginName);
 
             try
             {
-                using (var plugin = _scope.ResolveNamed<IPlugin>(options.Plugin))
-                {
-                    if (options.NoProgressBar)
-                    {
-                        Console.WriteLine($"Loaded: {plugin.Name}");
-                    }
-                    else
-                    {
-                        ConsoleHelper.WriteCentered($"Loaded: {plugin.Name}");
-                        Console.WriteLine();
-                    }
-
-                    plugin.Init();
-
-                    if (options.NoProgressBar)
-                    {
-                        var lastReportedProgress = -1;
-
-                        plugin.Progress += (sender, e) =>
-                        {
-                            int currentProgress = (int)Math.Floor(e.Percentage / 10.0) * 10; // Round down to the nearest 10%
-
-                            if (currentProgress > lastReportedProgress) // Only report if progress has increased by at least 10%
-                            {
-                                _logger.Info($"[{currentProgress}%] {e.Message}");
-                                lastReportedProgress = currentProgress == 100 ? -1 : currentProgress;
-                            }
-                        };
-                    }
-                    else
-                    {
-                        progressBar = new ProgressBar(10000, "Loading", barSettings);
-
-                        plugin.Progress += (sender, e) =>
-                        {
-                            progressBar.Message = e.Message;
-                            var progress = progressBar.AsProgress<float>();
-                            progress.Report(e.Percentage / 100f);
-                        };
-
-                        progressBar.Message = $"Loading plugin: {plugin.Name}...";
-                    }
-
-                    var pluginParams = ParseParams(options.Params);
-
-                    var success = await plugin.ExecuteAsync(pluginParams).ConfigureAwait(false);
-
-                    progressBar?.Dispose();
-                    progressBar = null;
-
-                    if (success)
-                    {
-                        var message = $"Plugin '{plugin.Name}' executed successfully!";
-                        Console.WriteLine(message);
-                        _logger.Info(message);
-                    }
-                    else
-                    {
-                        var message = $"The execution of '{plugin.Name}' plugin failed.";
-                        Console.WriteLine(message);
-                        _logger.Info(message);
-                        _logger.Error(message);
-                    }
-                }
-                
+                plugin.Init();
                 return true;
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, $"Error when executing the plugin '{options.Plugin}'");
+                _logger.Error(ex, $"Error when initializing the plugin '{pluginName}'");
                 return false;
             }
-            finally
+        }
+
+        protected virtual Task<bool> TryExecutePluginAsync(IPlugin plugin, Options options)
+        {
+            _logger.TraceMethod(nameof(PluginExecutor), nameof(TryExecutePluginAsync), nameof(plugin), plugin, nameof(options), options);
+
+            try
             {
-                progressBar?.Dispose();
+                var pluginParams = ParseParams(options.Params);
+                return plugin.ExecuteAsync(pluginParams);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, $"Error when executing the plugin '{options.Plugin}'");
+                return Task.FromResult(false);
             }
         }
 
         // Helper method to convert string parameters to IDictionary<string, string>
-        private IDictionary<string, string> ParseParams(string paramString)
+        protected virtual IDictionary<string, string> ParseParams(string paramString)
         {
             _logger.TraceMethod(nameof(PluginExecutor), nameof(ParseParams), nameof(paramString), paramString);
 
             var paramDict = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
-            if (!string.IsNullOrEmpty(paramString))
+            if (string.IsNullOrEmpty(paramString))
             {
-                // Split parameters by spaces, assuming format is "key=value"
-                var tokens = paramString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                return paramDict;
+            }
 
-                foreach (var token in tokens)
+            // Split parameters by spaces, assuming format is "key=value"
+            var tokens = paramString.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var token in tokens)
+            {
+                var keyValue = token.Split(new[] { '=' }, 2); // Split only on the first '='
+
+                if (keyValue.Length == 2)
                 {
-                    var keyValue = token.Split(new[] { '=' }, 2); // Split only on the first '='
+                    var key = keyValue[0].Trim();
+                    var value = keyValue[1].Trim();
 
-                    if (keyValue.Length == 2)
-                    {
-                        var key = keyValue[0].Trim();
-                        var value = keyValue[1].Trim();
-
-                        // Add to the dictionary
-                        paramDict[key] = value;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Warning: Invalid parameter format '{token}'. Expected 'key=value'.");
-                    }
+                    // Add to the dictionary
+                    paramDict[key] = value;
+                }
+                else
+                {
+                    throw new FormatException($"Invalid parameter format '{token}'. Expected 'key=value'.");
                 }
             }
 

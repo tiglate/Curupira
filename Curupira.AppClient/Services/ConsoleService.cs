@@ -1,14 +1,31 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
-namespace Curupira.AppClient
+namespace Curupira.AppClient.Services
 {
-    public static class ConsoleHelper
+    [ExcludeFromCodeCoverage]
+    public class ConsoleService : IConsoleService
     {
+        public void Clear()
+        {
+            Console.Clear();
+        }
+
+        public void WriteLine()
+        {
+            Console.WriteLine();
+        }
+
+        public void WriteLine(string value)
+        {
+            Console.WriteLine(value);
+        }
+
         /// <summary>
         /// Centers the given text within the console window.
         /// </summary>
         /// <param name="text">The text to center.</param>
-        public static void WriteCentered(string text, bool newLine = true)
+        public void WriteCentered(string text, bool newLine = true)
         {
             // Get the console window width
             int consoleWidth = Console.WindowWidth;

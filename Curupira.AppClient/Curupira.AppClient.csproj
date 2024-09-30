@@ -106,14 +106,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConsoleHelper.cs" />
+    <Compile Include="AppRunner.cs" />
+    <Compile Include="Services\ConsoleService.cs" />
     <Compile Include="Infra\IoC\LocalModule.cs" />
+    <Compile Include="Services\IConsoleService.cs" />
     <Compile Include="Services\IPluginExecutor.cs" />
     <Compile Include="Options.cs" />
+    <Compile Include="Services\IProgressBarService.cs" />
     <Compile Include="Services\PluginExecutor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Infra\IoC\AutofacContainerBuilder.cs" />
+    <Compile Include="Services\ProgressBarService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="App.ico" />
