@@ -104,12 +104,6 @@ namespace Curupira.Plugins.Installer
             }
             else
             {
-                // Check the uncompressed size before extracting
-                if (entry.Length > _maxAllowedUncompressedSize)
-                {
-                    throw new InvalidOperationException($"File '{entry.FullName}' exceeds the maximum allowed uncompressed size of {_maxAllowedUncompressedSize / (1024 * 1024 * 1024)} GB.");
-                }
-
                 // Update total extracted size
                 totalExtractedSize += entry.Length;
 
@@ -156,6 +150,18 @@ namespace Curupira.Plugins.Installer
             }
         }
 
+        protected virtual void ExtractFile(ZipArchiveEntry entry, string destinationPath, bool overwrite)
+        {
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(ExtractFile), nameof(entry), entry, nameof(destinationPath), destinationPath, nameof(overwrite), overwrite);
+
+            if (entry.Length > _maxAllowedUncompressedSize)
+            {
+                throw new InvalidOperationException($"File '{entry.FullName}' exceeds the maximum allowed uncompressed size of {_maxAllowedUncompressedSize / (1024 * 1024 * 1024)} GB.");
+            }
+
+            entry.ExtractToFile(destinationPath, overwrite);
+        }
+
         private void ReportProgress(int processedEntries, int totalEntries)
         {
             int percentage = (int)((double)processedEntries / totalEntries * 100);
@@ -188,13 +194,6 @@ namespace Curupira.Plugins.Installer
                 Logger.Warn($"Regex match timed out for pattern: {pattern}");
                 return false;
             }
-        }
-
-        protected virtual void ExtractFile(ZipArchiveEntry entry, string destinationPath, bool overwrite)
-        {
-            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(ExtractFile), nameof(entry), entry, nameof(destinationPath), destinationPath, nameof(overwrite), overwrite);
-
-            entry.ExtractToFile(destinationPath, overwrite);
         }
 
         private bool IsDirectory(ZipArchiveEntry entry)
