@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
@@ -12,20 +10,28 @@ namespace Curupira.Plugins.Installer
 {
     public class InstallerPlugin : BasePlugin<InstallerPluginConfig>
     {
-        private volatile bool _killed;
-        private readonly IProcessExecutor _processExecutor;
+        private readonly Dictionary<ComponentType, IComponentHandler> _handlers;
 
         public InstallerPlugin(ILogProvider logger, IPluginConfigParser<InstallerPluginConfig> configParser, IProcessExecutor processExecutor)
             : base("Installer Plugin", logger, configParser)
         {
-            _processExecutor = processExecutor;
+            _handlers = new Dictionary<ComponentType, IComponentHandler>
+            {
+                { ComponentType.Zip, new ZipComponentHandler(logger) },
+                { ComponentType.Msi, new MsiComponentHandler(processExecutor, logger) },
+                { ComponentType.Bat, new BatOrExeComponentHandler(processExecutor, logger) },
+                { ComponentType.Exe, new BatOrExeComponentHandler(processExecutor, logger) }
+            };
+
+            foreach (var handler in _handlers.Values)
+            {
+                handler.Progress += (sender, e) => OnProgress(e);
+            }
         }
 
-        public override async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
+        public override async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs, CancellationToken cancelationToken = default)
         {
             Logger.TraceMethod(nameof(InstallerPlugin), nameof(ExecuteAsync), nameof(commandLineArgs), commandLineArgs);
-
-            _killed = false;
 
             var components = GetComponents(commandLineArgs);
 
@@ -35,53 +41,43 @@ namespace Curupira.Plugins.Installer
             }
 
             var ignoreUnauthorizedAccess = GetIgnoreUnauthorizedAccessFlag(commandLineArgs);
-            var sucess = true;
+            var success = true;
             var processedComponents = 0;
             var totalComponents = components.Count;
 
             foreach (var component in components)
             {
-                if (_killed)
-                {
-                    Logger.Info(FormatLogMessage(nameof(ExecuteAsync), "Plugin execution cancelled."));
-                    return false;
-                }
+                cancelationToken.ThrowIfCancellationRequested();
 
-                try
+                if (_handlers.TryGetValue(component.Type, out var handler))
                 {
-                    var auxSuccess = true;
-
-                    switch (component.Type)
+                    try
                     {
-                        case ComponentType.Zip:
-                            auxSuccess = HandleZipComponent(component, ignoreUnauthorizedAccess);
-                            sucess = sucess && auxSuccess;
-                            break;
-                        case ComponentType.Msi:
-                            auxSuccess = await HandleMsiComponentAsync(component).ConfigureAwait(false);
-                            sucess = sucess && auxSuccess;
-                            break;
-                        case ComponentType.Bat:
-                        case ComponentType.Exe:
-                            auxSuccess = await HandleBatOrExeComponentAsync(component).ConfigureAwait(false);
-                            sucess = sucess && auxSuccess;
-                            break;
-                        default:
-                            throw new NotSupportedException($"Unsupported component type: {component.Type}");
+                        success = success && await handler.HandleAsync(component, ignoreUnauthorizedAccess, cancelationToken);
                     }
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error(ex, "An error occurred during installation/uninstallation.");
-                    sucess = false;
-                }
+                    catch (OperationCanceledException)
+                    {
+                        Logger.Info(FormatLogMessage(nameof(ExecuteAsync), "Plugin execution cancelled."));
+                        success = false;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Error(ex, "An error occurred during installation/uninstallation.");
+                        success = false;
+                    }
 
-                processedComponents++;
-                int percentage = (int)((double)processedComponents / totalComponents * 100);
-                OnProgress(new PluginProgressEventArgs(percentage, $"Processed {processedComponents} of {totalComponents} components"));
+                    processedComponents++;
+                    int percentage = (int)((double)processedComponents / totalComponents * 100);
+                    OnProgress(new PluginProgressEventArgs(percentage, $"Processed {processedComponents} of {totalComponents} components"));
+                }
+                else
+                {
+                    throw new NotSupportedException($"Unsupported component type: {component.Type}");
+                }
             }
 
-            return sucess;
+            return success;
         }
 
         private IList<Component> GetComponents(IDictionary<string, string> commandLineArgs)
@@ -107,183 +103,6 @@ namespace Curupira.Plugins.Installer
         {
             return commandLineArgs.TryGetValue("ignoreUnauthorizedAccess", out string ignoreUnauthorizedAccessString)
                 && bool.TryParse(ignoreUnauthorizedAccessString, out bool result) && result;
-        }
-
-        protected virtual bool HandleZipComponent(Component component, bool ignoreUnauthorizedAccess = false)
-        {
-            Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleZipComponent), nameof(component), component, nameof(ignoreUnauthorizedAccess), ignoreUnauthorizedAccess);
-
-            string sourceFile = component.Parameters["SourceFile"];
-            string targetDir = component.Parameters["TargetDir"];
-
-            if (string.IsNullOrEmpty(sourceFile) || string.IsNullOrEmpty(targetDir))
-            {
-                throw new InvalidOperationException("Missing or empty 'SourceFile' or 'TargetDir' parameter for zip component.");
-            }
-
-            Logger.Info($"Extracting '{sourceFile}' to '{targetDir}'...");
-
-            using (var archive = ZipFile.OpenRead(sourceFile))
-            {
-                var processedEntries = 0;
-                var totalEntries = archive.Entries.Count;
-
-                foreach (var entry in archive.Entries)
-                {
-                    if (_killed)
-                    {
-                        Logger.Info(FormatLogMessage(nameof(HandleZipComponent), "Plugin execution cancelled."));
-                        return false;
-                    }
-
-                    // Check if the entry should be removed
-                    if (component.RemoveItems.Any(removeItem => MatchesPattern(entry.FullName.Replace("/", "\\"), removeItem)))
-                    {
-                        Logger.Debug($"Skipping removed entry: {entry.FullName}");
-                        continue; // Skip this entry
-                    }
-
-                    string destinationPath = Path.Combine(targetDir, entry.FullName);
-
-                    if (IsDirectory(entry))
-                    {
-                        Directory.CreateDirectory(destinationPath);
-                    }
-                    else
-                    {
-                        var auxDir = Path.GetDirectoryName(destinationPath);
-
-                        if (!Directory.Exists(auxDir))
-                        {
-                            Directory.CreateDirectory(auxDir);
-                        }
-
-                        if (ignoreUnauthorizedAccess)
-                        {
-                            try
-                            {
-                                ExtractFile(entry, destinationPath, true); // Overwrite existing files
-                            }
-                            catch (UnauthorizedAccessException)
-                            {
-                                Logger.Warn($"Impossible to create/override the file: '{destinationPath}'");
-                            }
-                        }
-                        else
-                        {
-                            ExtractFile(entry, destinationPath, true); // Overwrite existing files
-                        }
-                    }
-
-                    processedEntries++;
-                    int percentage = (int)((double)processedEntries / totalEntries * 100);
-                    OnProgress(new PluginProgressEventArgs(percentage, $"Extracted {processedEntries} of {totalEntries} entries"));
-                }
-            }
-
-            Logger.Info("Extraction completed successfully.");
-            return true;
-        }
-
-        private static bool MatchesPattern(string path, string pattern)
-        {
-            // Escape special characters in the pattern
-            string escapedPattern = Regex.Escape(pattern);
-
-            // Replace wildcard characters with their regular expression equivalents
-            string regexPattern = "^" + escapedPattern
-                                        .Replace("\\*", ".*") // * matches zero or more characters
-                                        .Replace("\\?", ".")  // ? matches any single character
-                                 + "$";
-
-            // Perform the regular expression match (case-insensitive)
-            return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase);
-        }
-
-        private bool IsDirectory(ZipArchiveEntry entry)
-        {
-            Logger.TraceMethod(nameof(InstallerPlugin), nameof(IsDirectory), nameof(entry), entry);
-
-            if (entry == null)
-            {
-                return false;
-            }
-            return entry.FullName.Length > 0 && (entry.FullName[entry.FullName.Length - 1] == '/' || entry.FullName[entry.FullName.Length - 1] == '\\');
-        }
-
-        protected virtual async Task<bool> HandleMsiComponentAsync(Component component)
-        {
-            Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleMsiComponentAsync), nameof(component), component);
-
-            if (!component.Parameters.TryGetValue("SourceFile", out string sourceFile))
-            {
-                throw new InvalidOperationException("Missing or empty 'SourceFile' parameter for msi component.");
-            }
-
-            string action = component.Action == ComponentAction.Install ? "/i" : "/x";
-            string additionalParams = GetAdditionalParams(component);
-
-            var exitCode = await _processExecutor.ExecuteAsync("msiexec.exe", $"{action} \"{sourceFile}\" {additionalParams}", new FileInfo(sourceFile).Directory.FullName);
-
-            if (exitCode == 0)
-            {
-                Logger.Info($"MSI execution completed successfully.");
-                return true;
-            }
-            else
-            {
-                Logger.Error($"MSI execution failed with exit code {exitCode}.");
-                return false;
-            }
-        }
-
-        protected virtual async Task<bool> HandleBatOrExeComponentAsync(Component component)
-        {
-            Logger.TraceMethod(nameof(InstallerPlugin), nameof(HandleBatOrExeComponentAsync), nameof(component), component);
-
-            if (!component.Parameters.TryGetValue("SourceFile", out string sourceFile))
-            {
-                throw new InvalidOperationException("Missing or empty 'SourceFile' parameter for bat/exe component.");
-            }
-
-            string additionalParams = GetAdditionalParams(component);
-
-            // Build the command for .bat or .exe
-            string command = $"\"{sourceFile}\" {additionalParams}";
-
-            Logger.Info($"Executing command: {command}");
-
-            var exitCode = await _processExecutor.ExecuteAsync(sourceFile, additionalParams, new FileInfo(sourceFile).Directory.FullName);
-
-            if (exitCode == 0)
-            {
-                Logger.Info($"Execution completed successfully.");
-                return true;
-            }
-            else
-            {
-                Logger.Error($"Execution failed with exit code {exitCode}.");
-                return false;
-            }
-        }
-
-        private static string GetAdditionalParams(Component component)
-        {
-            const string paramsKey = "Params";
-            return component.Parameters.ContainsKey(paramsKey) ? component.Parameters[paramsKey] : "";
-        }
-
-        protected virtual void ExtractFile(ZipArchiveEntry entry, string destinationPath, bool overwrite)
-        {
-            entry.ExtractToFile(destinationPath, overwrite);
-        }
-
-        public override Task<bool> KillAsync()
-        {
-            Logger.TraceMethod(nameof(InstallerPlugin), nameof(KillAsync));
-
-            _killed = true;
-            return Task.FromResult(true);
         }
 
         protected override void Dispose(bool disposing)

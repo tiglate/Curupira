@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using System.Threading;
+using System.Threading.Tasks;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
 
@@ -13,19 +15,17 @@ namespace Curupira.Plugins.FoldersCreator
     /// </summary>
     public class FoldersCreatorPlugin : BasePlugin<FoldersCreatorPluginConfig>
     {
-        private volatile bool _killed;
-
         public FoldersCreatorPlugin(ILogProvider logger, IPluginConfigParser<FoldersCreatorPluginConfig> configParser)
             : base("FoldersCreatorPlugin", logger, configParser)
         {
         }
 
-        public override bool Execute(IDictionary<string, string> commandLineArgs)
+        public override Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs, CancellationToken cancelationToken = default)
         {
-            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
+            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(ExecuteAsync), nameof(commandLineArgs), commandLineArgs);
 
-            _killed = false;
             var success = true;
+
             try
             {
                 int totalDirectories = Config.DirectoriesToCreate.Count;
@@ -33,71 +33,88 @@ namespace Curupira.Plugins.FoldersCreator
 
                 foreach (string directoryPath in Config.DirectoriesToCreate)
                 {
-                    if (_killed)
+                    cancelationToken.ThrowIfCancellationRequested();
+
+                    if (!ProcessDirectory(directoryPath))
                     {
-                        Logger.Info(FormatLogMessage(nameof(Execute), "Plugin execution cancelled."));
                         success = false;
-                        break;
                     }
-                    else
-                    {
-                        if (!DirectoryExists(directoryPath))
-                        {
-                            string existingDirectory = FileSystemHelper.GetFirstExistingDirectoryOrRoot(directoryPath);
 
-                            if (string.IsNullOrEmpty(existingDirectory))
-                            {
-                                Logger.Error(FormatLogMessage(nameof(Execute), $"Invalid path '{directoryPath}'"));
-                                success = false;
-                            }
-                            else if (directoryPath.StartsWith(@"\\"))
-                            {
-                                try
-                                {
-                                    CreateDirectory(directoryPath);
-                                }
-                                catch (IOException)
-                                {
-                                    Logger.Error(FormatLogMessage(nameof(Execute), $"An error occurred during network directory creation '{directoryPath}'"));
-                                    success = false;
-                                }
-                                catch (UnauthorizedAccessException)
-                                {
-                                    Logger.Error(FormatLogMessage(nameof(Execute), $"Insufficient permissions to create directory '{directoryPath}'"));
-                                    success = false;
-                                }
-                            }
-                            else if (HasCreateDirectoryPermission(existingDirectory))
-                            {
-                                CreateDirectory(directoryPath);
-                            }
-                            else
-                            {
-                                Logger.Error(FormatLogMessage(nameof(Execute), $"Insufficient permissions to create directory '{directoryPath}'"));
-                                success = false;
-                            }
-                        }
-
-                        processedDirectories++;
-                        int percentage = (int)((double)processedDirectories / totalDirectories * 100);
-                        OnProgress(new PluginProgressEventArgs(percentage, $"Processed {processedDirectories} of {totalDirectories} directories"));
-                    }
+                    processedDirectories++;
+                    ReportProgress(processedDirectories, totalDirectories);
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Info(FormatLogMessage(nameof(ExecuteAsync), "Plugin execution cancelled."));
+                success = false;
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, FormatLogMessage(nameof(Execute), "An error occurred during directory creation."));
+                Logger.Error(ex, FormatLogMessage(nameof(ExecuteAsync), "An error occurred during directory creation."));
                 success = false;
             }
-            return success;
+
+            return Task.FromResult(success);
         }
 
-        public override bool Kill()
+        private bool ProcessDirectory(string directoryPath)
         {
-            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Kill));
+            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(ProcessDirectory), nameof(directoryPath), directoryPath);
 
-            _killed = true;
+            if (DirectoryExists(directoryPath)) return true;
+
+            string existingDirectory = FileSystemHelper.GetFirstExistingDirectoryOrRoot(directoryPath);
+
+            if (string.IsNullOrEmpty(existingDirectory))
+            {
+                Logger.Error(FormatLogMessage(nameof(ProcessDirectory), $"Invalid path '{directoryPath}'"));
+                return false;
+            }
+
+            if (directoryPath.StartsWith(@"\\")) return TryCreateNetworkDirectory(directoryPath);
+
+            return TryCreateLocalDirectory(directoryPath, existingDirectory);
+        }
+
+        private bool TryCreateNetworkDirectory(string directoryPath)
+        {
+            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(TryCreateNetworkDirectory), nameof(directoryPath), directoryPath);
+
+            try
+            {
+                CreateDirectory(directoryPath);
+                return true;
+            }
+            catch (IOException)
+            {
+                Logger.Error(FormatLogMessage(nameof(TryCreateNetworkDirectory), $"An error occurred during network directory creation '{directoryPath}'"));
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Logger.Error(FormatLogMessage(nameof(TryCreateNetworkDirectory), $"Insufficient permissions to create directory '{directoryPath}'"));
+            }
+            return false;
+        }
+
+        private bool TryCreateLocalDirectory(string directoryPath, string existingDirectory)
+        {
+            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(TryCreateLocalDirectory), nameof(directoryPath), directoryPath, nameof(existingDirectory), existingDirectory);
+
+            if (!HasCreateDirectoryPermission(existingDirectory))
+            {
+                Logger.Error(FormatLogMessage(nameof(TryCreateLocalDirectory), $"Insufficient permissions to create directory '{directoryPath}'"));
+                return false;
+            }
+
+            CreateDirectory(directoryPath);
             return true;
+        }
+
+        private void ReportProgress(int processedDirectories, int totalDirectories)
+        {
+            int percentage = (int)((double)processedDirectories / totalDirectories * 100);
+            OnProgress(new PluginProgressEventArgs(percentage, $"Processed {processedDirectories} of {totalDirectories} directories"));
         }
 
         /// <summary>

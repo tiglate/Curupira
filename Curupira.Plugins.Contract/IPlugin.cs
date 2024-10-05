@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Curupira.Plugins.Contract
@@ -23,14 +24,9 @@ namespace Curupira.Plugins.Contract
         /// Asynchronously executes the core functionality of the plug-in.
         /// </summary>
         /// <param name="commandLineArgs">Additional parameters from the command line.</param>
+        /// <param name="cancelationToken">Propagates notification that operations should be canceled.</param>
         /// <returns>A Task representing the asynchronous operation. The Task's result is true if execution was successful, false otherwise.</returns>
-        Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs);
-
-        /// <summary>
-        /// Asynchronously attempts to stop or kill the plug-in if it is stuck.
-        /// </summary>
-        /// <returns>A Task representing the asynchronous operation. The Task's result is true if successful, false otherwise.</returns>
-        Task<bool> KillAsync();
+        Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs, CancellationToken cancelationToken = default);
 
         /// <summary>
         /// Event triggered to report the progress of the plug-in's execution.

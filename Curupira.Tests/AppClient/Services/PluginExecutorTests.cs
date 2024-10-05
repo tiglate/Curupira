@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Curupira.Tests.AppClient.Services
@@ -96,7 +97,7 @@ namespace Curupira.Tests.AppClient.Services
         {
             // Arrange
             var options = new Options(_consoleServiceMock.Object) { Plugin = "TestPlugin", NoProgressBar = false };
-            _pluginMock.Setup(p => p.ExecuteAsync(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(true);
+            _pluginMock.Setup(p => p.ExecuteAsync(It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             // Act
             var result = await _pluginExecutor.ExecutePluginAsync(options);
@@ -113,7 +114,7 @@ namespace Curupira.Tests.AppClient.Services
         {
             // Arrange
             var options = new Options(_consoleServiceMock.Object) { Plugin = "TestPlugin" };
-            _pluginMock.Setup(p => p.ExecuteAsync(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(false);
+            _pluginMock.Setup(p => p.ExecuteAsync(It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
             // Act
             var result = await _pluginExecutor.ExecutePluginAsync(options);

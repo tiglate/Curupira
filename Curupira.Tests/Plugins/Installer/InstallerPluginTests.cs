@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Curupira.Tests.Plugins.ServiceManager
@@ -68,7 +69,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                     using (var entryStream = zipEntry.Open())
                     using (var writer = new StreamWriter(entryStream))
                     {
-                        writer.Write("This is a test file inside the zip.");
+                        await writer.WriteAsync("This is a test file inside the zip.");
                     }
                 }
             }
@@ -436,75 +437,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         }
 
         [TestMethod]
-        public async Task ExecuteAsync_ShouldLogWarning_WhenUnauthorizedAccessExceptionIsThrownDuringFileExtraction()
-        {
-            // Arrange
-            var component = new Component("TestZip", ComponentType.Zip, ComponentAction.None);
-            var tempFolder = Path.Combine(Path.GetTempPath(), "InstallerPluginTests");
-            Directory.CreateDirectory(tempFolder);
-
-            var sourceZipPath = Path.Combine(tempFolder, "test.zip");
-            var targetDir = Path.Combine(tempFolder, "output");
-
-            component.Parameters["SourceFile"] = sourceZipPath;
-            component.Parameters["TargetDir"] = targetDir;
-
-            // Add component to the config
-            _pluginConfig.Components.Add(component);
-
-            var commandLineArgs = new Dictionary<string, string> { { "component", "TestZip" }, { "ignoreUnauthorizedAccess", "true" } };
-
-            // Create a zip file dynamically
-            using (var zipFileStream = new FileStream(sourceZipPath, FileMode.Create, FileAccess.ReadWrite))
-            {
-                using (var archive = new ZipArchive(zipFileStream, ZipArchiveMode.Create))
-                {
-                    var zipEntry = archive.CreateEntry("test.txt");
-                    using (var entryStream = zipEntry.Open())
-                    using (var writer = new StreamWriter(entryStream))
-                    {
-                        writer.Write("This is a test file inside the zip.");
-                    }
-                }
-            }
-
-            // Initialize plugin with mocks and config setup
-            var pluginMock = new Mock<InstallerPlugin>(_loggerMock.Object, _configParserMock.Object, _processExecutorMock.Object)
-            {
-                CallBase = true // Allow calling real methods, except the ones overridden
-            };
-
-            // Setup the config to be initialized
-            _configParserMock.Setup(cp => cp.Execute()).Returns(_pluginConfig); // Config is initialized via the parser
-            pluginMock.Object.Init(); // This ensures that the Config property is populated
-
-            // Mock the ExtractFile method to throw an UnauthorizedAccessException
-            pluginMock
-                .Protected()
-                .Setup("ExtractFile", ItExpr.IsAny<ZipArchiveEntry>(), ItExpr.IsAny<string>(), true)
-                .Throws<UnauthorizedAccessException>();
-
-            try
-            {
-                // Act
-                var result = await pluginMock.Object.ExecuteAsync(commandLineArgs);
-
-                // Assert
-                Assert.IsTrue(result, "The plugin should complete successfully despite the unauthorized access exception.");
-                _loggerMock.Verify(l => l.Warn(It.Is<string>(msg => msg.Contains("Impossible to create/override the file"))), Times.Once);
-            }
-            finally
-            {
-                // Cleanup the test files
-                if (Directory.Exists(tempFolder))
-                {
-                    Directory.Delete(tempFolder, true); // Clean up the entire test folder
-                }
-            }
-        }
-
-        [TestMethod]
-        public async Task KillAsync_ShouldCancelExecution_WhenCalledWhileExtractingFiles()
+        public async Task ExecuteAsync_ShouldCancelExecution_WhenCancellationTokenIsTriggeredDuringFileExtraction()
         {
             // Arrange
             var component = new Component("TestZip", ComponentType.Zip, ComponentAction.None);
@@ -533,7 +466,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                         using (var entryStream = zipEntry.Open())
                         using (var writer = new StreamWriter(entryStream))
                         {
-                            writer.Write($"This is a test file {i} inside the zip.");
+                            await writer.WriteAsync($"This is a test file {i} inside the zip.");
                         }
                     }
                 }
@@ -552,30 +485,25 @@ namespace Curupira.Tests.Plugins.ServiceManager
             // Introduce a delay in the ExtractToFile method to simulate long extraction process
             pluginMock
                 .Protected()
-                .Setup("ExtractFile", ItExpr.IsAny<ZipArchiveEntry>(), ItExpr.IsAny<string>(), ItExpr.IsAny<bool>())
+                .Setup("OnProgress", ItExpr.IsAny<PluginProgressEventArgs>())
                 .Callback(() =>
                 {
                     Task.Delay(1000).Wait(); // Simulate long processing time for file extraction
                 });
 
-            // Start ExecuteAsync in a separate thread to simulate the plugin execution
-            var executionTask = Task.Run(() => pluginMock.Object.ExecuteAsync(commandLineArgs));
+            using (var sourceToken = new CancellationTokenSource())
+            {
+                sourceToken.CancelAfter(500);
+                var result = await pluginMock.Object.ExecuteAsync(commandLineArgs, sourceToken.Token);
 
-            // Give the execution a short time to start
-            await Task.Delay(1000);
+                // Assert
+                Assert.IsFalse(result, "Execution should be cancelled when the plugin is killed.");
+            }
 
-            // Act: Kill the plugin execution while it's running
-            var killTask = Task.Run(() => pluginMock.Object.KillAsync());
-
-            // Wait for both tasks to complete
-            await Task.WhenAll(executionTask, killTask);
-
-            // Assert
-            Assert.IsFalse(await executionTask, "The plugin should return false after being killed.");
             _loggerMock.Verify(l => l.Info(It.Is<string>(msg => msg.Contains("Plugin execution cancelled."))), Times.Once);
         }
 
-        private void CreateZipEntry(ZipArchive archive, string entryName, string content = null)
+        private static void CreateZipEntry(ZipArchive archive, string entryName, string content = null)
         {
             var zipEntry = archive.CreateEntry(entryName);
             if (content != null)

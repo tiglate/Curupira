@@ -7,6 +7,7 @@ using Moq;
 using Curupira.Plugins.Backup;
 using Curupira.Plugins.Contract;
 using System.IO.Compression;
+using System.Threading;
 
 namespace Curupira.Tests.Plugins.Backup
 {
@@ -104,6 +105,7 @@ namespace Curupira.Tests.Plugins.Backup
                     var zipFileName = $"{DateTime.Now.AddDays(-i):yyyyMMddhhmmss}-testArchive.zip";
                     using (var stream = File.Open(Path.Combine(_destinationFolder, zipFileName), FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
                     {
+                        await Task.Delay(100);
                     }
                 }
 
@@ -149,7 +151,7 @@ namespace Curupira.Tests.Plugins.Backup
         }
 
         [TestMethod]
-        public async Task BackupPlugin_Kill_ShouldStopBackupMidExecution_WithPartialMock()
+        public async Task ExecuteAsync_ShouldCancelMidExecution_WithPartialMock()
         {
             // Arrange
             var loggerMock = new Mock<ILogProvider>();
@@ -188,18 +190,17 @@ namespace Curupira.Tests.Plugins.Backup
             };
 
             // Act
-            var executeTask = backupPluginMock.Object.ExecuteAsync(commandLineArgs); // Start the backup process
+            using (var sourceToken = new CancellationTokenSource())
+            {
+                sourceToken.CancelAfter(500);
 
-            // Wait for a short period and then call KillAsync
-            await Task.Delay(500); // Wait a bit before killing the backup process
-            await backupPluginMock.Object.KillAsync();
+                var result = await backupPluginMock.Object.ExecuteAsync(commandLineArgs, sourceToken.Token);
 
-            // Wait for the execution to complete
-            var result = await executeTask;
+                // Assert
+                Assert.IsFalse(result, "Backup should stop when the cancellation token is trigged.");
+            }
 
-            // Assert
-            Assert.IsFalse(result, "Backup should stop when KillAsync is called.");
-            loggerMock.Verify(l => l.Info("BackupPlugin->AddItemsToZip: Plugin execution cancelled."), Times.Once); // Check if kill message was logged
+            loggerMock.Verify(l => l.Info(It.Is<string>(msg => msg.Contains("Plugin execution cancelled."))));
         }
 
         [TestMethod]
@@ -302,7 +303,7 @@ namespace Curupira.Tests.Plugins.Backup
             loggerMock.Verify(l => l.Fatal(It.Is<string>(msg => msg.Contains($"Archive '{invalidBackupId}' not found"))), Times.Once);
         }
 
-        private void CreateDummyFiles(string rootFolder, int fileCount)
+        private static void CreateDummyFiles(string rootFolder, int fileCount)
         {
             for (int i = 1; i <= fileCount; i++)
             {

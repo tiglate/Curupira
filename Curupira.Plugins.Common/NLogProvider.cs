@@ -66,16 +66,10 @@ namespace Curupira.Plugins.Common
             }
         }
 
-        /// <summary>
-        /// Logs the entry of a method along with its parameters.
-        /// </summary>
-        /// <param name="methodName">The name of the class containing the method.</param>
-        /// <param name="methodName">The name of the method being entered.</param>
-        /// <param name="parameters">An array of parameter names and their corresponding values, 
-        /// alternating between name and value.</param>
         public virtual void TraceMethod(string className, string methodName, params object[] parameters)
         {
             var logMessage = new System.Text.StringBuilder($"{className}.{methodName}(");
+
             for (int i = 0; i < parameters.Length; i += 2)
             {
                 if (i + 1 < parameters.Length)
@@ -83,56 +77,58 @@ namespace Curupira.Plugins.Common
                     var paramName = parameters[i].ToString();
                     var paramValue = parameters[i + 1];
 
-                    // Handle IDictionary parameters
-                    if (paramValue is IDictionary dictionary)
-                    {
-                        logMessage.Append($"{paramName} = {{ ");
-
-                        foreach (var key in dictionary.Keys)
-                        {
-                            var value = dictionary[key];
-
-                            // Enclose string and char values in quotes
-                            if (value is string || value is char)
-                            {
-                                value = $"\"{value}\"";
-                            }
-
-                            logMessage.Append($"\"{key}\" => {value}, ");
-                        }
-
-                        // Remove the trailing comma and space if present
-                        if (logMessage.Length > 0 && logMessage[logMessage.Length - 2] == ',')
-                        {
-                            logMessage.Length -= 2;
-                        }
-
-                        logMessage.Append(" }");
-                    }
-                    else
-                    {
-                        // Enclose string and char values in quotes for other types
-                        if (paramValue is string || paramValue is char)
-                        {
-                            paramValue = $"\"{paramValue}\"";
-                        }
-
-                        logMessage.Append($"{paramName} = {paramValue}");
-                    }
-
-                    logMessage.Append(", ");
+                    logMessage.Append($"{paramName} = {FormatParameterValue(paramValue)}, ");
                 }
             }
 
-            // Remove the trailing comma and space if present
-            if (logMessage.Length > 0 && logMessage[logMessage.Length - 2] == ',')
-            {
-                logMessage.Length -= 2;
-            }
-
+            RemoveTrailingComma(logMessage);
             logMessage.Append(")");
 
             Trace(logMessage.ToString());
+        }
+
+        private static string FormatParameterValue(object paramValue)
+        {
+            if (paramValue is IDictionary dictionary)
+            {
+                return FormatDictionary(dictionary);
+            }
+
+            return FormatBasicValue(paramValue);
+        }
+
+        private static string FormatDictionary(IDictionary dictionary)
+        {
+            var dictLog = new System.Text.StringBuilder("{ ");
+
+            foreach (var key in dictionary.Keys)
+            {
+                var value = dictionary[key];
+                dictLog.Append($"\"{key}\" => {FormatBasicValue(value)}, ");
+            }
+
+            RemoveTrailingComma(dictLog);
+            dictLog.Append(" }");
+
+            return dictLog.ToString();
+        }
+
+        private static string FormatBasicValue(object value)
+        {
+            if (value is string || value is char)
+            {
+                return $"\"{value}\"";
+            }
+
+            return value?.ToString() ?? "null";
+        }
+
+        private static void RemoveTrailingComma(System.Text.StringBuilder sb)
+        {
+            if (sb.Length > 0 && sb[sb.Length - 2] == ',')
+            {
+                sb.Length -= 2;
+            }
         }
     }
 }

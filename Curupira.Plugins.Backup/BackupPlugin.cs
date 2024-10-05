@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
@@ -11,18 +12,14 @@ namespace Curupira.Plugins.Backup
 {
     public class BackupPlugin : BasePlugin<BackupPluginConfig>
     {
-        private volatile bool _killed;
-
         public BackupPlugin(ILogProvider logger, IPluginConfigParser<BackupPluginConfig> configParser)
             : base("BackupPlugin", logger, configParser)
         {
         }
 
-        public override async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs)
+        public override async Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs, CancellationToken cancelationToken = default)
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(ExecuteAsync), nameof(commandLineArgs), commandLineArgs);
-
-            _killed = false;
 
             var archives = GetBackupArchives(commandLineArgs);
 
@@ -31,20 +28,23 @@ namespace Curupira.Plugins.Backup
                 return false;
             }
 
+            var success = true;
+
             try
             {
                 // Process each archive in parallel using Task.WhenAll
                 var tasks = archives.Select(async archive =>
                 {
-                    if (_killed)
-                    {
-                        Logger.Info(FormatLogMessage(nameof(ExecuteAsync), "Plugin execution cancelled."));
-                        return false;
-                    }
+                    cancelationToken.ThrowIfCancellationRequested();
 
                     var destination = !string.IsNullOrEmpty(archive.Destination) ? archive.Destination : Config.Destination;
                     var zipFileName = $"{DateTime.Now:yyyyMMddhhmmss}-{archive.Id}.zip";
                     var zipFilePath = Path.Combine(destination, zipFileName);
+
+                    if (!Directory.Exists(destination))
+                    {
+                        Directory.CreateDirectory(destination);
+                    }
 
                     // Enforce the backup limit asynchronously
                     await Task.Run(() => EnforceBackupLimit(archive.Id));
@@ -52,7 +52,7 @@ namespace Curupira.Plugins.Backup
                     // Create the zip archive asynchronously
                     using (var zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
                     {
-                        if (!await Task.Run(() => AddItemsToZip(zipArchive, archive)))
+                        if (!await Task.Run(() => AddItemsToZip(zipArchive, archive, cancelationToken)))
                         {
                             return false;
                         }
@@ -63,21 +63,20 @@ namespace Curupira.Plugins.Backup
                 });
 
                 // Wait for all tasks to complete
-                return Array.TrueForAll(await Task.WhenAll(tasks), successful => successful);
+                success = Array.TrueForAll(await Task.WhenAll(tasks), successful => successful);
+            }
+            catch (OperationCanceledException)
+            {
+                Logger.Info(FormatLogMessage(nameof(ExecuteAsync), "Plugin execution cancelled."));
+                success = false;
             }
             catch (Exception ex)
             {
                 Logger.Error(ex, "An error occurred during backup.");
-                return false;
+                success = false;
             }
-        }
 
-        public override Task<bool> KillAsync()
-        {
-            Logger.TraceMethod(nameof(BackupPlugin), nameof(KillAsync));
-
-            _killed = true;
-            return Task.FromResult(true);
+            return success;
         }
 
         protected override void Dispose(bool disposing)
@@ -112,21 +111,18 @@ namespace Curupira.Plugins.Backup
             return selectedArchive != null ? new[] { selectedArchive } : Config.Archives;
         }
 
-        private bool AddItemsToZip(ZipArchive zipArchive, BackupArchive backupArchive)
+        private bool AddItemsToZip(ZipArchive zipArchive, BackupArchive backupArchive, CancellationToken cancelationToken)
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(AddItemsToZip), nameof(zipArchive), zipArchive, nameof(backupArchive), backupArchive);
 
-            var toBeAddedList = GetFilesToBeAddedToZip(backupArchive);
+            var toBeAddedList = GetFilesToBeAddedToZip(backupArchive, cancelationToken);
             var totalEntries = toBeAddedList.Count;
             var processedEntries = 0;
 
             foreach (string itemPath in toBeAddedList)
             {
-                if (_killed)
-                {
-                    Logger.Info(FormatLogMessage(nameof(AddItemsToZip), "Plugin execution cancelled."));
-                    return false;
-                }
+                cancelationToken.ThrowIfCancellationRequested();
+
                 if (AddItemToZip(zipArchive, itemPath, backupArchive.Root))
                 {
                     processedEntries++;
@@ -171,24 +167,22 @@ namespace Curupira.Plugins.Backup
             return true;
         }
 
-        private IList<string> GetFilesToBeAddedToZip(BackupArchive archive)
+        private IList<string> GetFilesToBeAddedToZip(BackupArchive archive, CancellationToken cancelationToken)
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(GetFilesToBeAddedToZip), nameof(archive), archive);
 
             var filesList = new List<string>();
             var matcher = new FileMatcher(archive.Root, archive.Exclusions);
-            GetFilesToBeAddedToZip(new DirectoryInfo(archive.Root), filesList, matcher);
+            GetFilesToBeAddedToZip(new DirectoryInfo(archive.Root), filesList, matcher, cancelationToken);
             return filesList;
         }
 
-        private void GetFilesToBeAddedToZip(DirectoryInfo directory, List<string> filesList, FileMatcher matcher)
+        private void GetFilesToBeAddedToZip(DirectoryInfo directory, List<string> filesList, FileMatcher matcher, CancellationToken cancelationToken)
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(GetFilesToBeAddedToZip), nameof(directory), directory, nameof(filesList), filesList, nameof(matcher), matcher);
 
-            if (_killed)
-            {
-                return;
-            }
+            cancelationToken.ThrowIfCancellationRequested();
+
             filesList.AddRange(
                 directory
                     .GetFiles()
@@ -200,7 +194,7 @@ namespace Curupira.Plugins.Backup
                 if (!matcher.IsMatch(subdirectory.FullName))
                 {
                     filesList.Add(subdirectory.FullName);
-                    GetFilesToBeAddedToZip(subdirectory, filesList, matcher);
+                    GetFilesToBeAddedToZip(subdirectory, filesList, matcher, cancelationToken);
                 }
             }
         }

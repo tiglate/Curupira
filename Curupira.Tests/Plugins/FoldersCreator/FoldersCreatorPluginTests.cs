@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Moq.Protected;
 using System.Security.AccessControl;
 using System;
+using System.Threading;
 
 namespace Curupira.Tests.Plugins.FoldersCreator
 {
@@ -49,7 +50,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        public void Execute_ShouldCreateDirectories_WhenTheyDoNotExist()
+        public async Task Execute_ShouldCreateDirectories_WhenTheyDoNotExist()
         {
             // Arrange
             var directory1 = Path.Combine(Path.GetTempPath(), "tempDir1");
@@ -61,17 +62,17 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             _testDirectories.Add(directory2);
 
             // Act
-            var result = _foldersCreatorPlugin.Execute(new Dictionary<string, string>());
+            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>());
 
             // Assert
             Assert.IsTrue(result, "Plugin should execute successfully.");
             Assert.IsTrue(Directory.Exists(directory1), "Directory1 should be created.");
             Assert.IsTrue(Directory.Exists(directory2), "Directory2 should be created.");
-            _loggerMock.Verify(l => l.TraceMethod("FoldersCreatorPlugin", "Execute", "commandLineArgs", It.IsAny<object>()), Times.Once);
+            _loggerMock.Verify(l => l.TraceMethod("FoldersCreatorPlugin", "ExecuteAsync", "commandLineArgs", It.IsAny<object>()), Times.Once);
         }
 
         [TestMethod]
-        public void Execute_ShouldSkipExistingDirectories()
+        public async Task Execute_ShouldSkipExistingDirectories()
         {
             // Arrange
             var existingDirectory = Path.Combine(Path.GetTempPath(), "existingDir");
@@ -81,23 +82,23 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             _testDirectories.Add(existingDirectory);
 
             // Act
-            var result = _foldersCreatorPlugin.Execute(new Dictionary<string, string>());
+            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>());
 
             // Assert
             Assert.IsTrue(result, "Plugin should execute successfully.");
             Assert.IsTrue(Directory.Exists(existingDirectory), "Existing directory should not be recreated.");
-            _loggerMock.Verify(l => l.TraceMethod("FoldersCreatorPlugin", "Execute", "commandLineArgs", It.IsAny<object>()), Times.Once);
+            _loggerMock.Verify(l => l.TraceMethod("FoldersCreatorPlugin", "ExecuteAsync", "commandLineArgs", It.IsAny<object>()), Times.Once);
         }
 
         [TestMethod]
-        public void Execute_ShouldLogError_WhenInvalidDirectoryIsProvided()
+        public async Task Execute_ShouldLogError_WhenInvalidDirectoryIsProvided()
         {
             // Arrange
             var invalidDirectory = "Z:\\Invalid\\Path";
             _pluginConfig.DirectoriesToCreate.Add(invalidDirectory);
 
             // Act
-            var result = _foldersCreatorPlugin.Execute(new Dictionary<string, string>());
+            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>());
 
             // Assert
             Assert.IsFalse(result, "Plugin should fail when provided with an invalid directory.");
@@ -105,7 +106,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        public async Task ExecuteAsync_ShouldStopExecution_WhenKilled()
+        public async Task ExecuteAsync_ShouldStopExecution_WhenCancelled()
         {
             // Arrange
             var directory1 = Path.Combine(Path.GetTempPath(), "tempDir1");
@@ -121,17 +122,16 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             plugin.Init();
 
             // Act
-            var executeTask = plugin.ExecuteAsync(new Dictionary<string, string>());
+            using (var sourceToken = new CancellationTokenSource())
+            {
+                sourceToken.CancelAfter(500);
 
-            // Wait for a short period and then call KillAsync to simulate stopping the task mid-execution
-            await Task.Delay(500); // Wait a bit before killing the execution
-            await plugin.KillAsync();
+                var result = await plugin.ExecuteAsync(new Dictionary<string, string>(), sourceToken.Token);
 
-            // Wait for the execution to complete
-            var result = await executeTask;
+                // Assert
+                Assert.IsFalse(result, "Execution should be cancelled when the plugin is killed.");
+            }
 
-            // Assert
-            Assert.IsFalse(result, "Execution should be cancelled when the plugin is killed.");
             _loggerMock.Verify(l => l.Info(It.Is<string>(msg => msg.Contains("Plugin execution cancelled"))), Times.Once);
         }
 
@@ -208,7 +208,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        public void Execute_ShouldCreateNetworkShareDirectory_WhenDirectoryPathIsNetworkPath()
+        public async Task Execute_ShouldCreateNetworkShareDirectory_WhenDirectoryPathIsNetworkPath()
         {
             // Arrange
             var networkPath = @"\\192.168.1.1\mytest\sharedfolder";
@@ -233,7 +233,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = pluginMock.Object.Execute(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
 
             // Assert
             Assert.IsTrue(result, "The plugin should successfully create the network share directory.");
@@ -242,7 +242,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        public void Execute_ShouldLogError_WhenIOExceptionIsThrownDuringNetworkDirectoryCreation()
+        public async Task Execute_ShouldLogError_WhenIOExceptionIsThrownDuringNetworkDirectoryCreation()
         {
             // Arrange
             var networkPath = @"\\192.168.1.1\mytest\sharedfolder";
@@ -259,7 +259,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = pluginMock.Object.Execute(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when IOException is thrown.");
@@ -267,7 +267,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        public void Execute_ShouldLogError_WhenUnauthorizedAccessExceptionIsThrownDuringNetworkDirectoryCreation()
+        public async Task Execute_ShouldLogError_WhenUnauthorizedAccessExceptionIsThrownDuringNetworkDirectoryCreation()
         {
             // Arrange
             var networkPath = @"\\192.168.1.1\mytest\sharedfolder";
@@ -284,7 +284,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = pluginMock.Object.Execute(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when UnauthorizedAccessException is thrown.");
@@ -292,7 +292,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        public void Execute_ShouldLogError_WhenNoPermissionsToCreateDirectory()
+        public async Task Execute_ShouldLogError_WhenNoPermissionsToCreateDirectory()
         {
             // Arrange
             var directoryPath = Path.Combine(Path.GetTempPath(), "tempDirNoPermissions");
@@ -309,7 +309,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = pluginMock.Object.Execute(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when it doesn't have permission to create a directory.");
@@ -317,7 +317,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        public void Execute_ShouldLogError_WhenExceptionIsThrownDuringDirectoryCreation()
+        public async Task Execute_ShouldLogError_WhenExceptionIsThrownDuringDirectoryCreation()
         {
             // Arrange
             var directoryPath = Path.Combine(Path.GetTempPath(), "tempDirException");
@@ -334,7 +334,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = pluginMock.Object.Execute(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when an exception is thrown during directory creation.");
@@ -347,7 +347,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             return (bool)method.Invoke(_foldersCreatorPlugin, new object[] { path });
         }
 
-        private bool InvokeHasCreateDirectoryPermission(string path, FoldersCreatorPlugin plugin)
+        private static bool InvokeHasCreateDirectoryPermission(string path, FoldersCreatorPlugin plugin)
         {
             var method = typeof(FoldersCreatorPlugin).GetMethod("HasCreateDirectoryPermission", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
             return (bool)method.Invoke(plugin, new object[] { path });

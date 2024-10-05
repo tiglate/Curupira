@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ServiceProcess;
+using System.Threading.Tasks;
+using System.Threading;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
 
@@ -8,7 +10,6 @@ namespace Curupira.Plugins.ServiceManager
 {
     public class ServiceManagerPlugin : BasePlugin<ServiceManagerPluginConfig>
     {
-        private volatile bool _killed;
         private readonly IServiceControllerFactory _serviceControllerFactory;
         private readonly IProcessManager _processManager;
 
@@ -19,24 +20,22 @@ namespace Curupira.Plugins.ServiceManager
             _processManager = processManager;
         }
 
-        public override bool Execute(IDictionary<string, string> commandLineArgs)
+        public override Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs, CancellationToken cancelationToken = default)
         {
-            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Execute), nameof(commandLineArgs), commandLineArgs);
-
-            _killed = false;
+            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(ExecuteAsync), nameof(commandLineArgs), commandLineArgs);
 
             // Check for the required "bundle" argument
             if (!commandLineArgs.TryGetValue("bundle", out string bundleId))
             {
                 Logger.Error("Missing 'bundle' argument in command line.");
-                return false;
+                return Task.FromResult(false);
             }
 
             // Check if the specified bundle exists
             if (!Config.Bundles.TryGetValue(bundleId, out var bundle))
             {
                 Logger.Error($"Bundle '{bundleId}' not found in configuration.");
-                return false;
+                return Task.FromResult(false);
             }
 
             var success = true;
@@ -45,14 +44,10 @@ namespace Curupira.Plugins.ServiceManager
 
             foreach (var serviceAction in bundle.Services)
             {
-                if (_killed)
-                {
-                    Logger.Info(FormatLogMessage(nameof(commandLineArgs), "Plugin execution cancelled."));
-                    return false;
-                }
-
                 try
                 {
+                    cancelationToken.ThrowIfCancellationRequested();
+
                     using (var serviceController = _serviceControllerFactory.Build(serviceAction.ServiceName))
                     {
                         var auxSuccess = true;
@@ -77,6 +72,11 @@ namespace Curupira.Plugins.ServiceManager
                         }
                     }
                 }
+                catch (OperationCanceledException)
+                {
+                    Logger.Info(FormatLogMessage(nameof(ExecuteAsync), "Plugin execution cancelled."));
+                    success = false;
+                }
                 catch (Exception ex)
                 {
                     Logger.Error(ex, "An error occurred during service management.");
@@ -88,7 +88,7 @@ namespace Curupira.Plugins.ServiceManager
                 OnProgress(new PluginProgressEventArgs(percentage, $"Processed {processedServices} of {totalServices} services"));
             }
 
-            return success;
+            return Task.FromResult(success);
         }
 
         protected virtual bool StartService(ServiceAction serviceAction, IServiceController serviceController)
@@ -219,14 +219,6 @@ namespace Curupira.Plugins.ServiceManager
                 Logger.Error(ex, $"Error trying to kill the process for service '{serviceController.ServiceName}'.");
                 return false;
             }
-        }
-
-        public override bool Kill()
-        {
-            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Kill));
-
-            _killed = true;
-            return true;
         }
 
         protected override void Dispose(bool disposing)

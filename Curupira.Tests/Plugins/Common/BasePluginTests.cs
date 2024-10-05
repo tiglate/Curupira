@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
+using System.Threading;
 
 namespace Curupira.Tests.Plugins.Common
 {
@@ -36,68 +36,6 @@ namespace Curupira.Tests.Plugins.Common
             // Assert
             Assert.AreEqual(expectedConfig, _testPlugin.Config, "Config should be set by calling the config parser.");
             _loggerMock.Verify(l => l.TraceMethod(nameof(BasePlugin<object>), nameof(_testPlugin.Init)), Times.Once);
-        }
-
-        [TestMethod]
-        public async Task ExecuteAsync_ShouldReturnTrue_WhenExecuteIsSuccessful()
-        {
-            // Arrange
-            _testPlugin.SetExecuteResult(true);
-
-            var commandLineArgs = new Dictionary<string, string>();
-
-            // Act
-            var result = await _testPlugin.ExecuteAsync(commandLineArgs);
-
-            // Assert
-            Assert.IsTrue(result, "ExecuteAsync should return true when Execute is successful.");
-            _loggerMock.Verify(l => l.TraceMethod(nameof(BasePlugin<object>), nameof(_testPlugin.ExecuteAsync), nameof(commandLineArgs), commandLineArgs), Times.Once);
-            _loggerMock.Verify(l => l.Debug(It.Is<string>(msg => msg.Contains("Executing plugin logic."))), Times.Once);
-        }
-
-        [TestMethod]
-        public async Task ExecuteAsync_ShouldReturnFalse_WhenExecuteThrowsException()
-        {
-            // Arrange
-            _testPlugin.SetThrowOnExecute(true);
-
-            var commandLineArgs = new Dictionary<string, string>();
-
-            // Act
-            var result = await _testPlugin.ExecuteAsync(commandLineArgs);
-
-            // Assert
-            Assert.IsFalse(result, "ExecuteAsync should return false when Execute throws an exception.");
-            _loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(msg => msg.Contains("An error occurred during plugin execution."))), Times.Once);
-        }
-
-        [TestMethod]
-        public async Task KillAsync_ShouldReturnTrue_WhenKillIsSuccessful()
-        {
-            // Arrange
-            _testPlugin.SetKillResult(true);
-
-            // Act
-            var result = await _testPlugin.KillAsync();
-
-            // Assert
-            Assert.IsTrue(result, "KillAsync should return true when Kill is successful.");
-            _loggerMock.Verify(l => l.TraceMethod(nameof(BasePlugin<object>), nameof(_testPlugin.KillAsync)), Times.Once);
-            _loggerMock.Verify(l => l.Debug(It.Is<string>(msg => msg.Contains("Attempting to kill plugin."))), Times.Once);
-        }
-
-        [TestMethod]
-        public async Task KillAsync_ShouldReturnFalse_WhenKillThrowsException()
-        {
-            // Arrange
-            _testPlugin.SetThrowOnKill(true);
-
-            // Act
-            var result = await _testPlugin.KillAsync();
-
-            // Assert
-            Assert.IsFalse(result, "KillAsync should return false when Kill throws an exception.");
-            _loggerMock.Verify(l => l.Error(It.IsAny<Exception>(), It.Is<string>(msg => msg.Contains("An error occurred during plugin kill."))), Times.Once);
         }
 
         [TestMethod]
@@ -138,32 +76,8 @@ namespace Curupira.Tests.Plugins.Common
     // Helper class to test the BasePlugin
     public class TestPlugin : BasePlugin<object>
     {
-        private bool _executeResult = true;
-        private bool _killResult = true;
-        private bool _throwOnExecute = false;
-        private bool _throwOnKill = false;
-
         public TestPlugin(string pluginName, ILogProvider logger, IPluginConfigParser<object> configParser)
             : base(pluginName, logger, configParser) { }
-
-        public void SetExecuteResult(bool result) => _executeResult = result;
-        public void SetKillResult(bool result) => _killResult = result;
-        public void SetThrowOnExecute(bool shouldThrow) => _throwOnExecute = shouldThrow;
-        public void SetThrowOnKill(bool shouldThrow) => _throwOnKill = shouldThrow;
-
-        public override bool Execute(IDictionary<string, string> commandLineArgs)
-        {
-            if (_throwOnExecute)
-                throw new InvalidOperationException("Simulated exception in Execute.");
-            return _executeResult;
-        }
-
-        public override bool Kill()
-        {
-            if (_throwOnKill)
-                throw new InvalidOperationException("Simulated exception in Kill.");
-            return _killResult;
-        }
 
         public void RaiseProgress(PluginProgressEventArgs e)
         {
@@ -178,6 +92,11 @@ namespace Curupira.Tests.Plugins.Common
         protected override void Dispose(bool disposing)
         {
             //Nothing to clean up
+        }
+
+        public override Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs, CancellationToken cancelationToken = default)
+        {
+            return Task.FromResult(true);
         }
     }
 }
