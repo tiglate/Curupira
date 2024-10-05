@@ -6,20 +6,17 @@ using System.Threading.Tasks;
 
 namespace Curupira.Plugins.Installer
 {
-    public class BatOrExeComponentHandler : IComponentHandler
+    public class BatOrExeComponentHandler : BaseComponentHandler
     {
         private readonly IProcessExecutor _processExecutor;
-        private readonly ILogProvider _logger;
 
         public BatOrExeComponentHandler(IProcessExecutor processExecutor, ILogProvider logger)
+            : base(logger)
         {
             _processExecutor = processExecutor;
-            _logger = logger;
         }
 
-        public event EventHandler<PluginProgressEventArgs> Progress;
-
-        public async Task<bool> HandleAsync(Component component, bool ignoreUnauthorizedAccess, CancellationToken token)
+        public override async Task<bool> HandleAsync(Component component, bool ignoreUnauthorizedAccess, CancellationToken token)
         {
             if (!component.Parameters.TryGetValue("SourceFile", out string sourceFile))
             {
@@ -29,7 +26,7 @@ namespace Curupira.Plugins.Installer
             var additionalParams = GetAdditionalParams(component);
             var command = $"\"{sourceFile}\" {additionalParams}";
 
-            _logger.Info($"Executing command: {command}");
+            Logger.Info($"Executing command: {command}");
 
             OnProgress(new PluginProgressEventArgs(0, "Executing..."));
 
@@ -39,26 +36,14 @@ namespace Curupira.Plugins.Installer
 
             if (exitCode == 0)
             {
-                _logger.Info($"Execution completed successfully.");
+                Logger.Info($"Execution completed successfully.");
                 return true;
             }
             else
             {
-                _logger.Error($"Execution failed with exit code {exitCode}.");
+                Logger.Error($"Execution failed with exit code {exitCode}.");
                 return false;
             }
-        }
-
-        private static string GetAdditionalParams(Component component)
-        {
-            const string paramsKey = "Params";
-            return component.Parameters.ContainsKey(paramsKey) ? component.Parameters[paramsKey] : "";
-        }
-
-        private void OnProgress(PluginProgressEventArgs e)
-        {
-            _logger.Debug($"{nameof(ZipComponentHandler)}: Progress: {e.Percentage}% - {e.Message}");
-            Progress?.Invoke(this, e);
         }
     }
 }

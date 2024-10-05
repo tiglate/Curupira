@@ -6,20 +6,17 @@ using System.Threading.Tasks;
 
 namespace Curupira.Plugins.Installer
 {
-    public class MsiComponentHandler : IComponentHandler
+    public class MsiComponentHandler : BaseComponentHandler
     {
         private readonly IProcessExecutor _processExecutor;
-        private readonly ILogProvider _logger;
 
         public MsiComponentHandler(IProcessExecutor processExecutor, ILogProvider logger)
+            : base(logger)
         {
             _processExecutor = processExecutor;
-            _logger = logger;
         }
 
-        public event EventHandler<PluginProgressEventArgs> Progress;
-
-        public async Task<bool> HandleAsync(Component component, bool ignoreUnauthorizedAccess, CancellationToken token)
+        public override async Task<bool> HandleAsync(Component component, bool ignoreUnauthorizedAccess, CancellationToken token)
         {
             if (!component.Parameters.TryGetValue("SourceFile", out string sourceFile))
             {
@@ -37,26 +34,14 @@ namespace Curupira.Plugins.Installer
 
             if (exitCode == 0)
             {
-                _logger.Info($"MSI execution completed successfully.");
+                Logger.Info($"MSI execution completed successfully.");
                 return true;
             }
             else
             {
-                _logger.Error($"MSI execution failed with exit code {exitCode}.");
+                Logger.Error($"MSI execution failed with exit code {exitCode}.");
                 return false;
             }
-        }
-
-        private static string GetAdditionalParams(Component component)
-        {
-            const string paramsKey = "Params";
-            return component.Parameters.ContainsKey(paramsKey) ? component.Parameters[paramsKey] : "";
-        }
-
-        private void OnProgress(PluginProgressEventArgs e)
-        {
-            _logger.Debug($"{nameof(ZipComponentHandler)}: Progress: {e.Percentage}% - {e.Message}");
-            Progress?.Invoke(this, e);
         }
     }
 }

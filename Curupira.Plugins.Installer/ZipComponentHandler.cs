@@ -9,27 +9,23 @@ using System.Threading;
 
 namespace Curupira.Plugins.Installer
 {
-    public class ZipComponentHandler : IComponentHandler
+    public class ZipComponentHandler : BaseComponentHandler
     {
-        private readonly ILogProvider _logger;
-
         public ZipComponentHandler(ILogProvider logger)
+            : base(logger)
         {
-            _logger = logger;
         }
 
-        public event EventHandler<PluginProgressEventArgs> Progress;
-
-        public Task<bool> HandleAsync(Component component, bool ignoreUnauthorizedAccess, CancellationToken token)
+        public override Task<bool> HandleAsync(Component component, bool ignoreUnauthorizedAccess, CancellationToken token)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(HandleAsync), nameof(component), component, nameof(ignoreUnauthorizedAccess), ignoreUnauthorizedAccess);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(HandleAsync), nameof(component), component, nameof(ignoreUnauthorizedAccess), ignoreUnauthorizedAccess);
 
             var sourceFile = component.Parameters["SourceFile"];
             var targetDir = component.Parameters["TargetDir"];
 
             ValidateZipParameters(sourceFile, targetDir);
 
-            _logger.Info($"Extracting '{sourceFile}' to '{targetDir}'...");
+            Logger.Info($"Extracting '{sourceFile}' to '{targetDir}'...");
 
             using (var archive = ZipFile.OpenRead(sourceFile))
             {
@@ -42,7 +38,7 @@ namespace Curupira.Plugins.Installer
 
                     if (ShouldSkipEntry(component, entry))
                     {
-                        _logger.Debug($"Skipping removed entry: {entry.FullName}");
+                        Logger.Debug($"Skipping removed entry: {entry.FullName}");
                         continue;
                     }
 
@@ -52,13 +48,13 @@ namespace Curupira.Plugins.Installer
                 }
             }
 
-            _logger.Info("Extraction completed successfully.");
+            Logger.Info("Extraction completed successfully.");
             return Task.FromResult(true);
         }
 
         private void ValidateZipParameters(string sourceFile, string targetDir)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(ValidateZipParameters), nameof(sourceFile), sourceFile, nameof(targetDir), targetDir);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(ValidateZipParameters), nameof(sourceFile), sourceFile, nameof(targetDir), targetDir);
 
             if (string.IsNullOrEmpty(sourceFile) || string.IsNullOrEmpty(targetDir))
             {
@@ -68,44 +64,49 @@ namespace Curupira.Plugins.Installer
 
         private bool ShouldSkipEntry(Component component, ZipArchiveEntry entry)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(ShouldSkipEntry), nameof(component), component, nameof(entry), entry);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(ShouldSkipEntry), nameof(component), component, nameof(entry), entry);
 
             return component.RemoveItems.Any(removeItem => MatchesPattern(entry.FullName.Replace("/", "\\"), removeItem));
         }
 
         private void ProcessEntry(ZipArchiveEntry entry, string targetDir, bool ignoreUnauthorizedAccess)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(ProcessEntry), nameof(entry), entry, nameof(targetDir), targetDir, nameof(ignoreUnauthorizedAccess), ignoreUnauthorizedAccess);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(ProcessEntry), nameof(entry), entry, nameof(targetDir), targetDir, nameof(ignoreUnauthorizedAccess), ignoreUnauthorizedAccess);
 
             var destinationPath = Path.Combine(targetDir, entry.FullName);
 
+            // Get canonical (absolute) paths to avoid Zip Slip vulnerability
+            var canonicalDestinationPath = Path.GetFullPath(destinationPath);
+            var canonicalTargetDir = Path.GetFullPath(targetDir);
+
+            // Ensure the destination path is within the target directory
+            if (!canonicalDestinationPath.StartsWith(canonicalTargetDir, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException($"Entry is trying to extract outside of the target directory: {entry.FullName}");
+            }
+
             if (IsDirectory(entry))
             {
-                var canonicalDestinationPath = Path.GetFullPath(destinationPath);
-
-                if (canonicalDestinationPath.StartsWith(targetDir, StringComparison.Ordinal))
-                {
-                    Directory.CreateDirectory(destinationPath);
-                }
+                Directory.CreateDirectory(canonicalDestinationPath);
             }
             else
             {
-                EnsureDirectoryExists(Path.GetDirectoryName(destinationPath));
+                EnsureDirectoryExists(Path.GetDirectoryName(canonicalDestinationPath));
 
                 if (ignoreUnauthorizedAccess)
                 {
-                    TryExtractFile(entry, destinationPath);
+                    TryExtractFile(entry, canonicalDestinationPath);
                 }
                 else
                 {
-                    ExtractFile(entry, destinationPath, true);
+                    ExtractFile(entry, canonicalDestinationPath, true);
                 }
             }
         }
 
         private void EnsureDirectoryExists(string directoryPath)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(EnsureDirectoryExists), nameof(directoryPath), directoryPath);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(EnsureDirectoryExists), nameof(directoryPath), directoryPath);
 
             if (!Directory.Exists(directoryPath))
             {
@@ -115,7 +116,7 @@ namespace Curupira.Plugins.Installer
 
         private void TryExtractFile(ZipArchiveEntry entry, string destinationPath)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(TryExtractFile), nameof(entry), entry, nameof(destinationPath), destinationPath);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(TryExtractFile), nameof(entry), entry, nameof(destinationPath), destinationPath);
 
             try
             {
@@ -123,7 +124,7 @@ namespace Curupira.Plugins.Installer
             }
             catch (UnauthorizedAccessException)
             {
-                _logger.Warn($"Impossible to create/override the file: '{destinationPath}'");
+                Logger.Warn($"Impossible to create/override the file: '{destinationPath}'");
             }
         }
 
@@ -135,7 +136,7 @@ namespace Curupira.Plugins.Installer
 
         private bool MatchesPattern(string path, string pattern)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(MatchesPattern), nameof(path), path, nameof(pattern), pattern);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(MatchesPattern), nameof(path), path, nameof(pattern), pattern);
 
             // Escape special characters in the pattern
             string escapedPattern = Regex.Escape(pattern);
@@ -152,26 +153,20 @@ namespace Curupira.Plugins.Installer
 
         protected virtual void ExtractFile(ZipArchiveEntry entry, string destinationPath, bool overwrite)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(ExtractFile), nameof(entry), entry, nameof(destinationPath), destinationPath, nameof(overwrite), overwrite);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(ExtractFile), nameof(entry), entry, nameof(destinationPath), destinationPath, nameof(overwrite), overwrite);
 
             entry.ExtractToFile(destinationPath, overwrite);
         }
 
         private bool IsDirectory(ZipArchiveEntry entry)
         {
-            _logger.TraceMethod(nameof(ZipComponentHandler), nameof(IsDirectory), nameof(entry), entry);
+            Logger.TraceMethod(nameof(ZipComponentHandler), nameof(IsDirectory), nameof(entry), entry);
 
             if (entry == null)
             {
                 return false;
             }
             return entry.FullName.Length > 0 && (entry.FullName[entry.FullName.Length - 1] == '/' || entry.FullName[entry.FullName.Length - 1] == '\\');
-        }
-
-        private void OnProgress(PluginProgressEventArgs e)
-        {
-            _logger.Debug($"{nameof(ZipComponentHandler)}: Progress: {e.Percentage}% - {e.Message}");
-            Progress?.Invoke(this, e);
         }
     }
 }
