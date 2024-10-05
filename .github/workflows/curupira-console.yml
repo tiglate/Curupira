@@ -24,7 +24,7 @@ jobs:
         run: msbuild Curupira.sln /p:Configuration=Release
 
       - name: Run tests
-        uses: microsoft-approved-actions/vstest@master
+        uses: microsoft/vstest-action@v1.0.0
         with:
           testAssembly: Curupira.Tests/bin/Release/Curupira.Tests.dll
           runInParallel: true
