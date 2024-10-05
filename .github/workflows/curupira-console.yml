@@ -23,8 +23,8 @@ jobs:
       - name: Build solution
         run: msbuild Curupira.sln /p:Configuration=Release
 
+      - name: Setup VSTest Path
+        uses: darenm/Setup-VSTest@v1.2
+
       - name: Run tests
-        uses: microsoft/vstest-action@v1.0.0
-        with:
-          testAssembly: Curupira.Tests/bin/Release/Curupira.Tests.dll
-          runInParallel: true
+        run: vstest.console.exe Curupira.Tests/bin/Release/Curupira.Tests.dll
