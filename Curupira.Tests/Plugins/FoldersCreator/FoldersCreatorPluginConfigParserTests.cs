@@ -39,7 +39,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
                 </directories>
             </plugin>";
 
-        private string CreateTemporaryFileWithContent(string content)
+        private static string CreateTemporaryFileWithContent(string content)
         {
             var tempFile = System.IO.Path.GetTempFileName();
             System.IO.File.WriteAllText(tempFile, content);
@@ -68,7 +68,6 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        [ExpectedException(typeof(NotSupportedException))]
         public void Execute_ShouldThrowException_WhenLinuxDirectoryIsPresent()
         {
             // Arrange
@@ -76,7 +75,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             var parser = new FoldersCreatorPluginConfigParser(tempFile);
 
             // Act
-            parser.Execute(); // Should throw NotSupportedException
+            Assert.ThrowsException<NotSupportedException>(() => parser.Execute());
         }
 
         [TestMethod]
@@ -99,14 +98,13 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Execute_ShouldThrowArgumentNullException_WhenXmlConfigIsNull()
         {
             // Arrange
             var parser = new FoldersCreatorPluginConfigParser(null);
 
             // Act
-            parser.Execute(); // Should throw ArgumentNullException
+            Assert.ThrowsException<ArgumentNullException>(() =>  parser.Execute());
         }
 
         [TestCleanup]

@@ -7,6 +7,7 @@ using System;
 
 namespace Curupira.WindowsService.Attributes
 {
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
     public class ApiKeyAuthorizeAttribute : AuthorizationFilterAttribute
     {
         private const string ApiKeyHeaderName = "X-Api-Key";

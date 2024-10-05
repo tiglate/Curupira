@@ -88,7 +88,6 @@ namespace Curupira.Tests.Plugins.ServiceManager
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenBundleIdIsMissing()
         {
             // Arrange
@@ -96,11 +95,10 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var parser = new ServiceManagerPluginConfigParser(tempFile);
 
             // Act
-            parser.Execute(); // Should throw InvalidOperationException
+            Assert.ThrowsException<InvalidOperationException>(() => parser.Execute());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenActionIsInvalid()
         {
             // Arrange
@@ -108,11 +106,10 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var parser = new ServiceManagerPluginConfigParser(tempFile);
 
             // Act
-            parser.Execute(); // Should throw InvalidOperationException due to invalid action
+            Assert.ThrowsException<InvalidOperationException>(() => parser.Execute());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenServiceNameIsMissing()
         {
             // Arrange
@@ -131,11 +128,10 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var parser = new ServiceManagerPluginConfigParser(tempFile);
 
             // Act
-            parser.Execute(); // Should throw InvalidOperationException because the service name is missing
+            Assert.ThrowsException<InvalidOperationException>(() => parser.Execute()); // Should throw InvalidOperationException because the service name is missing
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenServiceActionIsMissing()
         {
             // Arrange
@@ -154,7 +150,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var parser = new ServiceManagerPluginConfigParser(tempFile);
 
             // Act
-            parser.Execute(); // Should throw InvalidOperationException because the service action is missing
+            Assert.ThrowsException<InvalidOperationException>(() => parser.Execute()); // Should throw InvalidOperationException because the service action is missing
         }
 
 

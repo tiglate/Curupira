@@ -187,14 +187,13 @@ namespace Curupira.Tests.AppClient.Services
         }
 
         [TestMethod]
-        [ExpectedException(typeof(FormatException))]
         public void ParseParams_ShouldThrowFormatException_WhenInvalidParamFormat()
         {
             // Arrange
             var paramString = "key1=value1 invalidparam";
 
             // Act
-            _pluginExecutor.ParseParams(paramString);
+            Assert.ThrowsException<FormatException>(() => _pluginExecutor.ParseParams(paramString));
         }
     }
 }

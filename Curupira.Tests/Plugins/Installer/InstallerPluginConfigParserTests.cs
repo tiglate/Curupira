@@ -86,7 +86,6 @@ namespace Curupira.Tests.Plugins.Installer
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenComponentIdOrTypeIsMissing()
         {
             // Arrange
@@ -103,11 +102,10 @@ namespace Curupira.Tests.Plugins.Installer
             var configParser = new InstallerPluginConfigParser(_tempFilePath);
 
             // Act
-            configParser.Execute();
+            Assert.ThrowsException<InvalidOperationException>(configParser.Execute);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenInvalidComponentTypeIsProvided()
         {
             // Arrange
@@ -124,11 +122,10 @@ namespace Curupira.Tests.Plugins.Installer
             var configParser = new InstallerPluginConfigParser(_tempFilePath);
 
             // Act
-            configParser.Execute();
+            Assert.ThrowsException<InvalidOperationException>(configParser.Execute);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenMsiComponentActionIsMissing()
         {
             // Arrange
@@ -145,11 +142,10 @@ namespace Curupira.Tests.Plugins.Installer
             var configParser = new InstallerPluginConfigParser(_tempFilePath);
 
             // Act
-            configParser.Execute();
+            Assert.ThrowsException<InvalidOperationException>(configParser.Execute);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenMsiComponentHasInvalidAction()
         {
             // Arrange
@@ -166,11 +162,10 @@ namespace Curupira.Tests.Plugins.Installer
             var configParser = new InstallerPluginConfigParser(_tempFilePath);
 
             // Act
-            configParser.Execute();
+            Assert.ThrowsException<InvalidOperationException>(configParser.Execute);
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowException_WhenParamNameIsMissing()
         {
             // Arrange
@@ -187,7 +182,7 @@ namespace Curupira.Tests.Plugins.Installer
             var configParser = new InstallerPluginConfigParser(_tempFilePath);
 
             // Act
-            configParser.Execute();
+            Assert.ThrowsException<InvalidOperationException>(configParser.Execute);
         }
     }
 }

@@ -29,7 +29,7 @@ namespace Curupira.Plugins.Installer
 
             var components = GetComponents(commandLineArgs);
 
-            if (components == null)
+            if (components == null || components.Count == 0)
             {
                 return false;
             }
@@ -96,7 +96,7 @@ namespace Curupira.Plugins.Installer
                 if (selectedComponent == null)
                 {
                     Logger.Fatal(FormatLogMessage(nameof(ExecuteAsync), $"Component '{componentId}' not found."));
-                    return null;
+                    return new List<Component>();
                 }
             }
 

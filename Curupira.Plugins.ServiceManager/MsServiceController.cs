@@ -76,9 +76,11 @@ namespace Curupira.Plugins.ServiceManager
                     string query = $"SELECT ProcessId FROM Win32_Service WHERE Name = '{_serviceController.ServiceName}'";
                     using (var searcher = new ManagementObjectSearcher(query))
                     {
-                        foreach (var obj in searcher.Get().Cast<ManagementObject>())
+                        var results = searcher.Get().Cast<ManagementObject>().ToArray();
+
+                        if (results.Length > 0)
                         {
-                            return Convert.ToInt32(obj["ProcessId"]);
+                            return Convert.ToInt32(results[0]["ProcessId"]);
                         }
                     }
                 }

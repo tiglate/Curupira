@@ -10,6 +10,7 @@ using System.Reflection;
 using System;
 using NLog;
 using Curupira.Plugins.Contract;
+using System.Configuration;
 
 namespace Curupira.Tests.AppClient
 {
@@ -140,11 +141,15 @@ namespace Curupira.Tests.AppClient
         [TestMethod]
         public void ApplyLogLevel_ShouldSetLogLevelToInfo_WhenLogLevelNotProvided()
         {
-            // Act
+            var expectedLogLevel = ConfigurationManager.AppSettings["LogLevel"];
+
             _appRunner.InvokeApplyLogLevel(null);
 
-            // Assert
-            // No exception should occur; the default log level is applied
+            var consoleRule = LogManager.Configuration.FindRuleByName("consoleRule");
+
+            Assert.IsNotNull(consoleRule, "The consoleRule should not be null.");
+
+            Assert.AreEqual(expectedLogLevel, consoleRule.Levels[0].Name, $"The log level should be set to {expectedLogLevel}.");
         }
 
         [TestMethod]

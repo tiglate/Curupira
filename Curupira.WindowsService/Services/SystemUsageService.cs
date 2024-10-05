@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Management;
 using Curupira.WindowsService.Model;
 
@@ -69,7 +70,8 @@ namespace Curupira.WindowsService.Services
             {
                 using (var searcher = new ManagementObjectSearcher("SELECT LastBootUpTime FROM Win32_OperatingSystem"))
                 {
-                    foreach (var os in searcher.Get())
+                    var os = searcher.Get().Cast<ManagementBaseObject>().FirstOrDefault();
+                    if (os != null)
                     {
                         DateTime bootTime = ManagementDateTimeConverter.ToDateTime(os["LastBootUpTime"].ToString());
                         return bootTime.ToString("g"); // Returns the boot time in a readable format
