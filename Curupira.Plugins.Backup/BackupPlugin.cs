@@ -172,7 +172,7 @@ namespace Curupira.Plugins.Backup
             Logger.TraceMethod(nameof(BackupPlugin), nameof(GetFilesToBeAddedToZip), nameof(archive), archive);
 
             var filesList = new List<string>();
-            var matcher = new FileMatcher(archive.Root, archive.Exclusions);
+            var matcher = new FileMatcher(archive.Root, archive.Exclusions, Logger);
             GetFilesToBeAddedToZip(new DirectoryInfo(archive.Root), filesList, matcher, cancelationToken);
             return filesList;
         }

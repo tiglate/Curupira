@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Curupira.Plugins.Contract;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -10,8 +12,9 @@ namespace Curupira.Plugins.Backup
     {
         private readonly IEnumerable<string> _patterns;
         private readonly string _rootDir;
+        private readonly ILogProvider _logger;
 
-        public FileMatcher(string rootDir, IEnumerable<string> patterns)
+        public FileMatcher(string rootDir, IEnumerable<string> patterns, ILogProvider logger = null)
         {
             if (string.IsNullOrWhiteSpace(rootDir))
             {
@@ -25,6 +28,7 @@ namespace Curupira.Plugins.Backup
 
             _rootDir = $"{Path.GetFullPath(rootDir).TrimEnd(Path.DirectorySeparatorChar)}{Path.DirectorySeparatorChar}";
             _patterns = patterns.Select(p => p.Replace('/', Path.DirectorySeparatorChar)).ToList();
+            _logger = logger;
         }
 
         public bool IsMatch(string path)
@@ -37,7 +41,7 @@ namespace Curupira.Plugins.Backup
             return _patterns.Any(pattern => MatchesPattern(path, $"{_rootDir}{pattern.TrimEnd('\\', '/')}"));
         }
 
-        private static bool MatchesPattern(string path, string pattern)
+        private bool MatchesPattern(string path, string pattern)
         {
             // Escape special characters in the pattern
             string escapedPattern = Regex.Escape(pattern);
@@ -48,8 +52,25 @@ namespace Curupira.Plugins.Backup
                                         .Replace("\\?", ".")  // ? matches any single character
                                  + "$";
 
-            // Perform the regular expression match (case-insensitive)
-            return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase);
+            try
+            {
+                var matchTimeout = TimeSpan.FromSeconds(1);
+
+                // Perform the regular expression match (case-insensitive)
+                return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase, matchTimeout);
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                if (_logger != null)
+                {
+                    _logger.Warn($"Regex match timed out for pattern: {pattern}");
+                }
+                else
+                {
+                    Debug.WriteLine($"Regex match timed out for pattern: {pattern}");
+                }
+                return false;
+            }
         }
     }
 }
