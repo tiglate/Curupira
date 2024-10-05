@@ -6,14 +6,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Configuration;
 
 namespace Curupira.Plugins.Installer
 {
     public class ZipComponentHandler : BaseComponentHandler
     {
+        private readonly long _maxAllowedUncompressedSize;
+        private long totalExtractedSize;
+
         public ZipComponentHandler(ILogProvider logger)
             : base(logger)
         {
+            var maxAllowedUncompressedSizeString = ConfigurationManager.AppSettings["MaxAllowedUncompressedSize"];
+
+            if (!long.TryParse(maxAllowedUncompressedSizeString, out _maxAllowedUncompressedSize))
+            {
+                _maxAllowedUncompressedSize = 10737418240; // 10 Gb max allowed uncompressed size
+            }
         }
 
         public override Task<bool> HandleAsync(Component component, bool ignoreUnauthorizedAccess, CancellationToken token)
@@ -26,6 +36,9 @@ namespace Curupira.Plugins.Installer
             ValidateZipParameters(sourceFile, targetDir);
 
             Logger.Info($"Extracting '{sourceFile}' to '{targetDir}'...");
+
+            //Resets the accumulator
+            totalExtractedSize = 0;
 
             using (var archive = ZipFile.OpenRead(sourceFile))
             {
@@ -91,6 +104,21 @@ namespace Curupira.Plugins.Installer
             }
             else
             {
+                // Check the uncompressed size before extracting
+                if (entry.Length > _maxAllowedUncompressedSize)
+                {
+                    throw new InvalidOperationException($"File '{entry.FullName}' exceeds the maximum allowed uncompressed size of {_maxAllowedUncompressedSize / (1024 * 1024 * 1024)} GB.");
+                }
+
+                // Update total extracted size
+                totalExtractedSize += entry.Length;
+
+                // If the total extracted size exceeds the allowed limit, stop extraction
+                if (totalExtractedSize > _maxAllowedUncompressedSize)
+                {
+                    throw new InvalidOperationException($"Total extracted size exceeds the maximum allowed size of {_maxAllowedUncompressedSize / (1024 * 1024 * 1024)} GB. Possible Zip Bomb attack detected.");
+                }
+
                 EnsureDirectoryExists(Path.GetDirectoryName(canonicalDestinationPath));
 
                 if (ignoreUnauthorizedAccess)
@@ -147,8 +175,19 @@ namespace Curupira.Plugins.Installer
                                         .Replace("\\?", ".")  // ? matches any single character
                                  + "$";
 
-            // Perform the regular expression match (case-insensitive)
-            return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase);
+            try
+            {
+                // Set a regex timeout to prevent potential DoS attacks
+                var matchTimeout = TimeSpan.FromMilliseconds(500);
+
+                // Perform the regular expression match (case-insensitive) with timeout
+                return Regex.IsMatch(path, regexPattern, RegexOptions.IgnoreCase, matchTimeout);
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                Logger.Warn($"Regex match timed out for pattern: {pattern}");
+                return false;
+            }
         }
 
         protected virtual void ExtractFile(ZipArchiveEntry entry, string destinationPath, bool overwrite)
