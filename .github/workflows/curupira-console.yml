@@ -1,0 +1,29 @@
+name: Curupira Console .NET Framework Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore Curupira.sln
+
+      - name: Build solution
+        run: msbuild Curupira.sln /p:Configuration=Release
+
+      - name: Run tests
+        run: |
+          dotnet test Curupira.sln --no-build --verbosity normal --filter FullyQualifiedName~Tests
+          vstest.console.exe Curupira.Tests/bin/Release/Curupira.Tests.dll
