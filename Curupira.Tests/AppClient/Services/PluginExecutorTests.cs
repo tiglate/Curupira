@@ -26,7 +26,6 @@ namespace Curupira.Tests.AppClient.Services
             public PluginExecutorTestable(ILifetimeScope scope, ILogProvider logger, IProgressBarService progressBarService, IConsoleService consoleService)
                 : base(scope, logger, progressBarService, consoleService) { }
 
-            public new void ShowBanner() => base.ShowBanner();
             public new void AttachProgressHandler(IPlugin plugin, bool noProgressBar) => base.AttachProgressHandler(plugin, noProgressBar);
             public new bool TryInitializePlugin(IPlugin plugin, string pluginName) => base.TryInitializePlugin(plugin, pluginName);
             public new Task<bool> TryExecutePluginAsync(IPlugin plugin, Options options) => base.TryExecutePluginAsync(plugin, options);
@@ -66,7 +65,7 @@ namespace Curupira.Tests.AppClient.Services
         public async Task ExecutePluginAsync_ShouldReturnFalse_WhenPluginNotFound()
         {
             // Arrange
-            var options = new Options { Plugin = "NonExistentPlugin" };
+            var options = new Options(_consoleServiceMock.Object) { Plugin = "NonExistentPlugin" };
 
             // Act
             var result = await _pluginExecutor.ExecutePluginAsync(options);
@@ -81,7 +80,7 @@ namespace Curupira.Tests.AppClient.Services
         public async Task ExecutePluginAsync_ShouldReturnFalse_WhenPluginInitializationFails()
         {
             // Arrange
-            var options = new Options { Plugin = "TestPlugin" };
+            var options = new Options(_consoleServiceMock.Object) { Plugin = "TestPlugin" };
             _pluginMock.Setup(p => p.Init()).Throws(new Exception("Initialization failed"));
 
             // Act
@@ -96,7 +95,7 @@ namespace Curupira.Tests.AppClient.Services
         public async Task ExecutePluginAsync_ShouldExecuteSuccessfully_WithProgressBar()
         {
             // Arrange
-            var options = new Options { Plugin = "TestPlugin", NoProgressBar = false };
+            var options = new Options(_consoleServiceMock.Object) { Plugin = "TestPlugin", NoProgressBar = false };
             _pluginMock.Setup(p => p.ExecuteAsync(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(true);
 
             // Act
@@ -113,7 +112,7 @@ namespace Curupira.Tests.AppClient.Services
         public async Task ExecutePluginAsync_ShouldReturnFalse_WhenPluginExecutionFails()
         {
             // Arrange
-            var options = new Options { Plugin = "TestPlugin" };
+            var options = new Options(_consoleServiceMock.Object) { Plugin = "TestPlugin" };
             _pluginMock.Setup(p => p.ExecuteAsync(It.IsAny<IDictionary<string, string>>())).ReturnsAsync(false);
 
             // Act
@@ -122,17 +121,6 @@ namespace Curupira.Tests.AppClient.Services
             // Assert
             Assert.IsFalse(result);
             _loggerMock.Verify(l => l.Error(It.Is<string>(msg => msg.Contains("plugin failed"))), Times.Once);
-        }
-
-        [TestMethod]
-        public void ShowBanner_ShouldPrintBanner()
-        {
-            // Act
-            _pluginExecutor.ShowBanner();
-
-            // Assert
-            _consoleServiceMock.Verify(c => c.Clear(), Times.Once);
-            _consoleServiceMock.Verify(c => c.WriteCentered(It.IsAny<string>(), It.IsAny<bool>()), Times.AtLeastOnce);
         }
 
         [TestMethod]

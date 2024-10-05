@@ -136,6 +136,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppClient\AppRunnerTests.cs" />
+    <Compile Include="AppClient\OptionsTests.cs" />
     <Compile Include="AppClient\Services\PluginExecutorTests.cs" />
     <Compile Include="Plugins\Backup\BackupPluginConfigParserTests.cs" />
     <Compile Include="Plugins\Backup\BackupPluginTests.cs" />

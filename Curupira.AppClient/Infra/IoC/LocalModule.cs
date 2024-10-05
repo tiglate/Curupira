@@ -10,6 +10,9 @@ namespace Curupira.AppClient.Infra.IoC
     {
         protected override void Load(ContainerBuilder builder)
         {
+            builder.RegisterType<AutofacHelper>()
+                .As<IAutofacHelper>();
+
             builder.RegisterType<ProgressBarService>()
                 .As<IProgressBarService>();
 

@@ -25,11 +25,6 @@ namespace Curupira.AppClient.Services
         {
             _logger.TraceMethod(nameof(PluginExecutor), nameof(ExecutePluginAsync), nameof(options), options);
 
-            if (!options.NoLogo)
-            {
-                ShowBanner();
-            }
-
             if (!_scope.IsRegisteredWithName(options.Plugin, typeof(IPlugin)))
             {
                 var message = $"Plugin '{options.Plugin}' not found!";
@@ -75,21 +70,6 @@ namespace Curupira.AppClient.Services
 
                 return success;
             }
-        }
-
-        protected virtual void ShowBanner()
-        {
-            _logger.TraceMethod(nameof(PluginExecutor), nameof(ShowBanner));
-
-            _consoleService.Clear();
-            _consoleService.WriteLine();
-            _consoleService.WriteCentered(@" ██████╗██╗   ██╗██████╗ ██╗   ██╗██████╗ ██╗██████╗  █████╗ ");
-            _consoleService.WriteCentered(@"██╔════╝██║   ██║██╔══██╗██║   ██║██╔══██╗██║██╔══██╗██╔══██╗");
-            _consoleService.WriteCentered(@"██║     ██║   ██║██████╔╝██║   ██║██████╔╝██║██████╔╝███████║");
-            _consoleService.WriteCentered(@"██║     ██║   ██║██╔══██╗██║   ██║██╔═══╝ ██║██╔══██╗██╔══██║");
-            _consoleService.WriteCentered(@"╚██████╗╚██████╔╝██║  ██║╚██████╔╝██║     ██║██║  ██║██║  ██║");
-            _consoleService.WriteCentered(@" ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝");
-            _consoleService.WriteCentered(@"                                                             ");
         }
 
         protected virtual void AttachProgressHandler(IPlugin plugin, bool noProgressBar)

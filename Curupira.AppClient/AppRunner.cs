@@ -1,6 +1,8 @@
 ﻿using Autofac;
 using CommandLine;
+using Curupira.AppClient.Infra.IoC;
 using Curupira.AppClient.Services;
+using Curupira.Plugins.Contract;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -9,13 +11,19 @@ using System.Threading.Tasks;
 
 namespace Curupira.AppClient
 {
-    public class AppRunner
+    public class AppRunner : IDisposable
     {
         private readonly IContainer _container;
+        private readonly ILifetimeScope _lifetimeScope;
+        private readonly IConsoleService _consoleService;
+        private readonly IAutofacHelper _autofacHelper;
 
         public AppRunner(IContainer container)
         {
             _container = container;
+            _lifetimeScope = _container.BeginLifetimeScope();
+            _consoleService = _lifetimeScope.Resolve<IConsoleService>();
+            _autofacHelper = _lifetimeScope.Resolve<IAutofacHelper>();
         }
 
         public async Task<int> RunAsync(string[] args)
@@ -23,7 +31,15 @@ namespace Curupira.AppClient
             var result = ParseArguments(args);
 
             return await result.MapResult(
-                async options => await RunAsync(options).ConfigureAwait(false),  // Successful parsing
+                async options =>
+                {
+                    if (!options.IsValid(result))
+                    {
+                        return 1; // Return 1 if validation fails
+                    }
+
+                    return await RunAsync(options).ConfigureAwait(false);  // Successful parsing
+                },
                 errors => Task.FromResult(HandleParseError(errors))   // Error handling
             ).ConfigureAwait(false);
         }
@@ -32,16 +48,47 @@ namespace Curupira.AppClient
         {
             ApplyLogLevel(options.Level);
 
-            using (var scope = _container.BeginLifetimeScope())
+            if (options.ListPlugins)
             {
-                var pluginExecutor = scope.Resolve<IPluginExecutor>();
-                return await pluginExecutor.ExecutePluginAsync(options).ConfigureAwait(false) ? 0 : 1;
+                ListAvailablePlugins();
+                return await Task.FromResult(0);
             }
+
+            if (!options.NoLogo)
+            {
+                ShowBanner();
+            }
+
+            var pluginExecutor = _lifetimeScope.Resolve<IPluginExecutor>();
+            return await pluginExecutor.ExecutePluginAsync(options).ConfigureAwait(false) ? 0 : 1;
         }
 
         protected virtual ParserResult<Options> ParseArguments(string[] args)
         {
-            return Parser.Default.ParseArguments<Options>(args);
+            return Parser.Default.ParseArguments(() => new Options(_consoleService), args);
+        }
+
+        protected virtual void ListAvailablePlugins()
+        {
+            var implementations = _autofacHelper.GetNamedImplementationsOfInterface<IPlugin>();
+
+            foreach (var (Name, _) in implementations)
+            {
+                _consoleService.WriteLine(Name);
+            }
+        }
+
+        protected virtual void ShowBanner()
+        {
+            _consoleService.Clear();
+            _consoleService.WriteLine();
+            _consoleService.WriteCentered(@" ██████╗██╗   ██╗██████╗ ██╗   ██╗██████╗ ██╗██████╗  █████╗ ");
+            _consoleService.WriteCentered(@"██╔════╝██║   ██║██╔══██╗██║   ██║██╔══██╗██║██╔══██╗██╔══██╗");
+            _consoleService.WriteCentered(@"██║     ██║   ██║██████╔╝██║   ██║██████╔╝██║██████╔╝███████║");
+            _consoleService.WriteCentered(@"██║     ██║   ██║██╔══██╗██║   ██║██╔═══╝ ██║██╔══██╗██╔══██║");
+            _consoleService.WriteCentered(@"╚██████╗╚██████╔╝██║  ██║╚██████╔╝██║     ██║██║  ██║██║  ██║");
+            _consoleService.WriteCentered(@" ╚═════╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝");
+            _consoleService.WriteCentered(@"                                                             ");
         }
 
         protected virtual int HandleParseError(IEnumerable<Error> errs)
@@ -50,7 +97,7 @@ namespace Curupira.AppClient
             {
                 return 0; // Error code for success
             }
-            Console.WriteLine("Use --help to view usage instructions.");
+            _consoleService.WriteLine("Use --help to view usage instructions.");
             return 1; // Error code for failure
         }
 
@@ -92,6 +139,11 @@ namespace Curupira.AppClient
             var config = LogManager.Configuration;
             var consoleRule = config.FindRuleByName("consoleRule");
             consoleRule?.SetLoggingLevels(logLevel, LogLevel.Fatal);
+        }
+
+        public void Dispose()
+        {
+            _lifetimeScope?.Dispose();
         }
     }
 }

@@ -107,8 +107,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppRunner.cs" />
+    <Compile Include="Services\AutofacHelper.cs" />
     <Compile Include="Services\ConsoleService.cs" />
     <Compile Include="Infra\IoC\LocalModule.cs" />
+    <Compile Include="Services\IAutofacHelper.cs" />
     <Compile Include="Services\IConsoleService.cs" />
     <Compile Include="Services\IPluginExecutor.cs" />
     <Compile Include="Options.cs" />

@@ -11,8 +11,10 @@ namespace Curupira.AppClient
         {
             using (var container = AutofacContainerBuilder.Configure())
             {
-                var runner = new AppRunner(container);
-                return await runner.RunAsync(args);
+                using (var runner = new AppRunner(container))
+                {
+                    return await runner.RunAsync(args);
+                }
             }
         }
     }
