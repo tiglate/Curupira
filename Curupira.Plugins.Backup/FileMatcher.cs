@@ -37,7 +37,7 @@ namespace Curupira.Plugins.Backup
             return _patterns.Any(pattern => MatchesPattern(path, $"{_rootDir}{pattern.TrimEnd('\\', '/')}"));
         }
 
-        private bool MatchesPattern(string path, string pattern)
+        private static bool MatchesPattern(string path, string pattern)
         {
             // Escape special characters in the pattern
             string escapedPattern = Regex.Escape(pattern);

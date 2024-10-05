@@ -17,9 +17,11 @@ namespace Curupira.AppClient.Infra.IoC
                 .As<IProgressBarService>();
 
             builder.RegisterType<ConsoleService>()
-                .As<IConsoleService>();
+                .As<IConsoleService>()
+                .SingleInstance();
 
-            builder.RegisterType<PluginExecutor>().As<IPluginExecutor>();
+            builder.RegisterType<PluginExecutor>()
+                .As<IPluginExecutor>();
         }
     }
 }

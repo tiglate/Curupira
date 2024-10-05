@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 namespace Curupira.AppClient
 {
     [ExcludeFromCodeCoverage]
-    class Program
+    static class Program
     {
         static async Task<int> Main(string[] args)
         {

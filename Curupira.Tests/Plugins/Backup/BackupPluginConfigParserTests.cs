@@ -117,7 +117,7 @@ namespace Curupira.Tests.Plugins.Backup
             var parser = new BackupPluginConfigParser(_tempConfigFilePath);
 
             // Call private method using reflection for testing.
-            var method = typeof(BackupPluginConfigParser).GetMethod("Execute", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var method = typeof(BackupPluginConfigParser).GetMethod("Execute", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
             try
             {
                 method.Invoke(parser, new object[] { null });

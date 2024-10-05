@@ -46,7 +46,7 @@ namespace Curupira.Plugins.FoldersCreator
             return pluginConfig;
         }
 
-        private string SanitizeDiretoryNames(string dir)
+        private static string SanitizeDiretoryNames(string dir)
         {
             if (dir.StartsWith("/"))
             {

@@ -9,7 +9,7 @@ namespace Curupira.Plugins.Common
             string currentDirectory = directoryPath;
             while (!string.IsNullOrEmpty(currentDirectory) && !DirectoryExists(currentDirectory))
             {
-                if (currentDirectory != null && currentDirectory.EndsWith(":"))
+                if (currentDirectory.EndsWith(":"))
                 {
                     return string.Empty;
                 }

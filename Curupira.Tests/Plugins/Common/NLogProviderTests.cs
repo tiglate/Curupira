@@ -40,7 +40,7 @@ namespace Curupira.Tests.Plugins.Common
 
             // Assert
             Assert.IsNotNull(nlogProvider, "The NLogProvider instance should be created.");
-            Assert.AreEqual(mockLogger.Object, nlogProvider.LoggerImpl, "The logger should be correctly initialized.");
+            Assert.AreEqual(mockLogger.Object, nlogProvider.InnerLogger, "The logger should be correctly initialized.");
         }
 
         [TestMethod]

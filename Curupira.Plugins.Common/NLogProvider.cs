@@ -10,7 +10,7 @@ namespace Curupira.Plugins.Common
     /// </summary>
     public class NLogProvider : ILogProvider
     {
-        public Logger LoggerImpl { get; private set; }
+        public Logger InnerLogger { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the NLogProvider class.
@@ -18,7 +18,7 @@ namespace Curupira.Plugins.Common
         /// <param name="loggerName">The name of the NLog logger to use. If null or empty, the default logger will be used.</param>
         public NLogProvider(string loggerName = null)
         {
-            LoggerImpl = string.IsNullOrEmpty(loggerName) ? LogManager.GetCurrentClassLogger() : LogManager.GetLogger(loggerName);
+            InnerLogger = string.IsNullOrEmpty(loggerName) ? LogManager.GetCurrentClassLogger() : LogManager.GetLogger(loggerName);
         }
 
         /// <summary>
@@ -27,42 +27,42 @@ namespace Curupira.Plugins.Common
         /// <param name="logger">Instance of NLog.Logger class.</param>
         public NLogProvider(Logger logger)
         {
-            LoggerImpl = logger;
+            InnerLogger = logger;
         }
 
-        public virtual void Trace(string message, params object[] args) => LoggerImpl.Trace(message, args);
+        public virtual void Trace(string message, params object[] args) => InnerLogger.Trace(message, args);
 
-        public virtual void Debug(string message, params object[] args) => LoggerImpl.Debug(message, args);
+        public virtual void Debug(string message, params object[] args) => InnerLogger.Debug(message, args);
 
-        public virtual void Info(string message, params object[] args) => LoggerImpl.Info(message, args);
+        public virtual void Info(string message, params object[] args) => InnerLogger.Info(message, args);
 
-        public virtual void Warn(string message, params object[] args) => LoggerImpl.Warn(message, args);
+        public virtual void Warn(string message, params object[] args) => InnerLogger.Warn(message, args);
 
-        public virtual void Error(string message, params object[] args) => LoggerImpl.Error(message, args);
-
-        public virtual void Fatal(string message, params object[] args) => LoggerImpl.Fatal(message, args);
+        public virtual void Fatal(string message, params object[] args) => InnerLogger.Fatal(message, args);
 
         public virtual void Fatal(Exception exception, string message = null, params object[] args)
         {
             if (string.IsNullOrEmpty(message))
             {
-                LoggerImpl.Fatal(exception);
+                InnerLogger.Fatal(exception);
             }
             else
             {
-                LoggerImpl.Fatal(exception, message, args);
+                InnerLogger.Fatal(exception, message, args);
             }
         }
+
+        public virtual void Error(string message, params object[] args) => InnerLogger.Error(message, args);
 
         public virtual void Error(Exception exception, string message = null, params object[] args)
         {
             if (string.IsNullOrEmpty(message))
             {
-                LoggerImpl.Error(exception);
+                InnerLogger.Error(exception);
             }
             else
             {
-                LoggerImpl.Error(exception, message, args);
+                InnerLogger.Error(exception, message, args);
             }
         }
 
@@ -84,9 +84,8 @@ namespace Curupira.Plugins.Common
                     var paramValue = parameters[i + 1];
 
                     // Handle IDictionary parameters
-                    if (paramValue is IDictionary)
+                    if (paramValue is IDictionary dictionary)
                     {
-                        var dictionary = (IDictionary)paramValue;
                         logMessage.Append($"{paramName} = {{ ");
 
                         foreach (var key in dictionary.Keys)

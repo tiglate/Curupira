@@ -26,7 +26,7 @@ namespace Curupira.Plugins.Backup
 
             var archives = GetBackupArchives(commandLineArgs);
 
-            if (archives == null)
+            if (archives == null || !archives.Any())
             {
                 return false;
             }
@@ -63,7 +63,7 @@ namespace Curupira.Plugins.Backup
                 });
 
                 // Wait for all tasks to complete
-                return (await Task.WhenAll(tasks)).All(successful => successful);
+                return Array.TrueForAll(await Task.WhenAll(tasks), successful => successful);
             }
             catch (Exception ex)
             {
@@ -80,13 +80,16 @@ namespace Curupira.Plugins.Backup
             return Task.FromResult(true);
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            Logger.TraceMethod(nameof(BackupPlugin), nameof(Dispose));
+            if (disposing)
+            {
+                Logger.TraceMethod(nameof(BackupPlugin), nameof(Dispose));
+            }
             // This plugin doesn't have any resources to dispose.
         }
 
-        private IList<BackupArchive> GetBackupArchives(IDictionary<string, string> commandLineArgs)
+        private IEnumerable<BackupArchive> GetBackupArchives(IDictionary<string, string> commandLineArgs)
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(GetBackupArchives), nameof(commandLineArgs), commandLineArgs);
 
@@ -102,7 +105,7 @@ namespace Curupira.Plugins.Backup
                 if (selectedArchive == null)
                 {
                     Logger.Fatal(FormatLogMessage(nameof(ExecuteAsync), $"Archive '{archiveId}' not found."));
-                    return null;
+                    return Enumerable.Empty<BackupArchive>();
                 }
             }
 

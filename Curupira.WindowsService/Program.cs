@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Curupira.WindowsService
 {
-    public class Program
+    static class Program
     {
         static readonly Logger logger = LogManager.GetCurrentClassLogger();
         private static IDisposable _webApp;

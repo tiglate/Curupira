@@ -175,9 +175,9 @@ namespace Curupira.Tests.Plugins.Common
             return FormatLogMessage(method, message, includeTimestamp);
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            // Dispose logic
+            //Nothing to clean up
         }
     }
 }

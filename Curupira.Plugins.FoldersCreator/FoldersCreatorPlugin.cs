@@ -125,14 +125,11 @@ namespace Curupira.Plugins.FoldersCreator
                 {
                     // Check if the rule applies to the current user or one of the user's groups
                     if (principal.IsInRole(new SecurityIdentifier(rule.IdentityReference.Value)) &&
-                        rule.AccessControlType == AccessControlType.Allow)
+                        rule.AccessControlType == AccessControlType.Allow &&
+                        ((rule.FileSystemRights & FileSystemRights.CreateDirectories) == FileSystemRights.CreateDirectories ||
+                         (rule.FileSystemRights & FileSystemRights.Write) == FileSystemRights.Write))
                     {
-                        // Check for CreateDirectories or Write rights using bitwise AND
-                        if ((rule.FileSystemRights & FileSystemRights.CreateDirectories) == FileSystemRights.CreateDirectories ||
-                            (rule.FileSystemRights & FileSystemRights.Write) == FileSystemRights.Write)
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
 
@@ -150,9 +147,12 @@ namespace Curupira.Plugins.FoldersCreator
             }
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Dispose));
+            if (disposing)
+            {
+                Logger.TraceMethod(nameof(FoldersCreatorPlugin), nameof(Dispose));
+            }
             // This plugin doesn't have any resources to dispose.
         }
 

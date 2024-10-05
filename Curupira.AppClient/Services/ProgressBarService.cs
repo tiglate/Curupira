@@ -41,7 +41,16 @@ namespace Curupira.AppClient.Services
 
         public void Dispose()
         {
-            _progressBar?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _progressBar?.Dispose();
+            }
         }
     }
 }

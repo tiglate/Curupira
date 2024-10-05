@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using CommandLine;
-using Curupira.AppClient.Infra.IoC;
 using Curupira.AppClient.Services;
 using Curupira.Plugins.Contract;
 using NLog;
@@ -13,17 +12,20 @@ namespace Curupira.AppClient
 {
     public class AppRunner : IDisposable
     {
-        private readonly IContainer _container;
         private readonly ILifetimeScope _lifetimeScope;
         private readonly IConsoleService _consoleService;
         private readonly IAutofacHelper _autofacHelper;
 
         public AppRunner(IContainer container)
         {
-            _container = container;
-            _lifetimeScope = _container.BeginLifetimeScope();
+            _lifetimeScope = container.BeginLifetimeScope();
             _consoleService = _lifetimeScope.Resolve<IConsoleService>();
             _autofacHelper = _lifetimeScope.Resolve<IAutofacHelper>();
+        }
+
+        ~AppRunner()
+        {
+            Dispose(false);
         }
 
         public async Task<int> RunAsync(string[] args)
@@ -143,7 +145,16 @@ namespace Curupira.AppClient
 
         public void Dispose()
         {
-            _lifetimeScope?.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _lifetimeScope?.Dispose();
+            }
         }
     }
 }

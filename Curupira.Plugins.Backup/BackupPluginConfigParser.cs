@@ -21,7 +21,7 @@ namespace Curupira.Plugins.Backup
             return Execute(configXml.DocumentElement);
         }
 
-        private BackupPluginConfig Execute(XmlElement xmlConfig)
+        private static BackupPluginConfig Execute(XmlElement xmlConfig)
         {
             if (xmlConfig == null)
             {

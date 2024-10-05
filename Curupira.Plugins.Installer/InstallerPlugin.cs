@@ -103,11 +103,10 @@ namespace Curupira.Plugins.Installer
             return selectedComponent != null ? new[] { selectedComponent } : Config.Components;
         }
 
-        private bool GetIgnoreUnauthorizedAccessFlag(IDictionary<string, string> commandLineArgs)
+        private static bool GetIgnoreUnauthorizedAccessFlag(IDictionary<string, string> commandLineArgs)
         {
             return commandLineArgs.TryGetValue("ignoreUnauthorizedAccess", out string ignoreUnauthorizedAccessString)
-                ? bool.TryParse(ignoreUnauthorizedAccessString, out bool result) && result
-                : false;
+                && bool.TryParse(ignoreUnauthorizedAccessString, out bool result) && result;
         }
 
         protected virtual bool HandleZipComponent(Component component, bool ignoreUnauthorizedAccess = false)
@@ -186,7 +185,7 @@ namespace Curupira.Plugins.Installer
             return true;
         }
 
-        private bool MatchesPattern(string path, string pattern)
+        private static bool MatchesPattern(string path, string pattern)
         {
             // Escape special characters in the pattern
             string escapedPattern = Regex.Escape(pattern);
@@ -281,9 +280,12 @@ namespace Curupira.Plugins.Installer
             return Task.FromResult(true);
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            Logger.TraceMethod(nameof(InstallerPlugin), nameof(Dispose));
+            if (disposing)
+            {
+                Logger.TraceMethod(nameof(InstallerPlugin), nameof(Dispose));
+            }
             // This plugin doesn't have any resources to dispose.
         }
     }

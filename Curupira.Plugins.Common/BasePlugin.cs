@@ -90,6 +90,12 @@ namespace Curupira.Plugins.Common
             return formattedMessage;
         }
 
-        public abstract void Dispose();
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected abstract void Dispose(bool disposing);
     }
 }

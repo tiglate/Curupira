@@ -229,10 +229,12 @@ namespace Curupira.Plugins.ServiceManager
             return true;
         }
 
-        public override void Dispose()
+        protected override void Dispose(bool disposing)
         {
-            Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Dispose));
-
+            if (disposing)
+            {
+                Logger.TraceMethod(nameof(ServiceManagerPlugin), nameof(Dispose));
+            }
             // This plugin doesn't have any resources to dispose.
         }
     }

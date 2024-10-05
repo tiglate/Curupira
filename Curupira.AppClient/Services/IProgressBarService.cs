@@ -1,6 +1,8 @@
-﻿namespace Curupira.AppClient.Services
+﻿using System;
+
+namespace Curupira.AppClient.Services
 {
-    public interface IProgressBarService
+    public interface IProgressBarService : IDisposable
     {
         void Init(int maxTicks, string message);
 
