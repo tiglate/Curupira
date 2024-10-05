@@ -81,7 +81,12 @@ namespace Curupira.Plugins.Installer
 
             if (IsDirectory(entry))
             {
-                Directory.CreateDirectory(destinationPath);
+                var canonicalDestinationPath = Path.GetFullPath(destinationPath);
+
+                if (canonicalDestinationPath.StartsWith(targetDir, StringComparison.Ordinal))
+                {
+                    Directory.CreateDirectory(destinationPath);
+                }
             }
             else
             {

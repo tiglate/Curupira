@@ -152,7 +152,6 @@ namespace Curupira.Tests.AppClient
             Assert.AreEqual(expectedLogLevel, consoleRule.Levels[0].Name, $"The log level should be set to {expectedLogLevel}.");
         }
 
-        [TestMethod]
         [DataRow("OFF")]
         [DataRow("TRACE")]
         [DataRow("DEBUG")]
@@ -162,6 +161,7 @@ namespace Curupira.Tests.AppClient
         [DataRow("FATAL")]
         [DataRow("INVALID")]  // Invalid case
         [DataRow(null)]       // Null case
+        [TestMethod]
         public void ApplyLogLevel_ShouldSetCorrectLogLevel(string logLevelSetting)
         {
             // Arrange
