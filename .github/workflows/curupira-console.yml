@@ -24,6 +24,7 @@ jobs:
         run: msbuild Curupira.sln /p:Configuration=Release
 
       - name: Run tests
-        run: |
-          dotnet test Curupira.sln --no-build --verbosity normal --filter FullyQualifiedName~Tests
-          vstest.console.exe Curupira.Tests/bin/Release/Curupira.Tests.dll
+        uses: microsoft-approved-actions/vstest@master
+        with:
+          testAssembly: Curupira.Tests/bin/Release/Curupira.Tests.dll
+          runInParallel: true
