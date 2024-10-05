@@ -20,7 +20,7 @@ namespace Curupira.Plugins.Installer
             return ParseConfig(configXml.DocumentElement);
         }
 
-        private InstallerPluginConfig ParseConfig(XmlElement xmlConfig)
+        private static InstallerPluginConfig ParseConfig(XmlElement xmlConfig)
         {
             if (xmlConfig == null)
             {

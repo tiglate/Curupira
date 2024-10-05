@@ -10,7 +10,7 @@ namespace Curupira.Plugins.Common
     /// </summary>
     public class NLogProvider : ILogProvider
     {
-        public Logger InnerLogger { get; private set; }
+        public Logger Log { get; private set; }
 
         /// <summary>
         /// Initializes a new instance of the NLogProvider class.
@@ -18,7 +18,7 @@ namespace Curupira.Plugins.Common
         /// <param name="loggerName">The name of the NLog logger to use. If null or empty, the default logger will be used.</param>
         public NLogProvider(string loggerName = null)
         {
-            InnerLogger = string.IsNullOrEmpty(loggerName) ? LogManager.GetCurrentClassLogger() : LogManager.GetLogger(loggerName);
+            Log = string.IsNullOrEmpty(loggerName) ? LogManager.GetCurrentClassLogger() : LogManager.GetLogger(loggerName);
         }
 
         /// <summary>
@@ -27,42 +27,42 @@ namespace Curupira.Plugins.Common
         /// <param name="logger">Instance of NLog.Logger class.</param>
         public NLogProvider(Logger logger)
         {
-            InnerLogger = logger;
+            Log = logger;
         }
 
-        public virtual void Trace(string message, params object[] args) => InnerLogger.Trace(message, args);
+        public virtual void Trace(string message, params object[] args) => Log.Trace(message, args);
 
-        public virtual void Debug(string message, params object[] args) => InnerLogger.Debug(message, args);
+        public virtual void Debug(string message, params object[] args) => Log.Debug(message, args);
 
-        public virtual void Info(string message, params object[] args) => InnerLogger.Info(message, args);
+        public virtual void Info(string message, params object[] args) => Log.Info(message, args);
 
-        public virtual void Warn(string message, params object[] args) => InnerLogger.Warn(message, args);
+        public virtual void Warn(string message, params object[] args) => Log.Warn(message, args);
 
-        public virtual void Fatal(string message, params object[] args) => InnerLogger.Fatal(message, args);
+        public virtual void Fatal(string message, params object[] args) => Log.Fatal(message, args);
 
         public virtual void Fatal(Exception exception, string message = null, params object[] args)
         {
             if (string.IsNullOrEmpty(message))
             {
-                InnerLogger.Fatal(exception);
+                Log.Fatal(exception);
             }
             else
             {
-                InnerLogger.Fatal(exception, message, args);
+                Log.Fatal(exception, message, args);
             }
         }
 
-        public virtual void Error(string message, params object[] args) => InnerLogger.Error(message, args);
+        public virtual void Error(string message, params object[] args) => Log.Error(message, args);
 
         public virtual void Error(Exception exception, string message = null, params object[] args)
         {
             if (string.IsNullOrEmpty(message))
             {
-                InnerLogger.Error(exception);
+                Log.Error(exception);
             }
             else
             {
-                InnerLogger.Error(exception, message, args);
+                Log.Error(exception, message, args);
             }
         }
 

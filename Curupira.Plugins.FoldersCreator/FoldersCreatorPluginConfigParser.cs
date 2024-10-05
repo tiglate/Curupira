@@ -20,7 +20,7 @@ namespace Curupira.Plugins.FoldersCreator
             return Execute(configXml.DocumentElement);
         }
 
-        private FoldersCreatorPluginConfig Execute(XmlElement xmlConfig)
+        private static FoldersCreatorPluginConfig Execute(XmlElement xmlConfig)
         {
             if (xmlConfig == null)
             {

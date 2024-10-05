@@ -5,7 +5,7 @@ using System.IO;
 using System.Management;
 using Curupira.WindowsService.Model;
 
-namespace Curupira.WindowsService.Service
+namespace Curupira.WindowsService.Services
 {
     public class SystemUsageService : ISystemUsageService
     {
@@ -23,7 +23,7 @@ namespace Curupira.WindowsService.Service
         }
 
         // Get current CPU usage percentage
-        private double GetCpuUsage()
+        private static double GetCpuUsage()
         {
             using (PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total"))
             {
@@ -34,7 +34,7 @@ namespace Curupira.WindowsService.Service
         }
 
         // Get memory usage percentage
-        private double GetMemoryUsage()
+        private static double GetMemoryUsage()
         {
             using (PerformanceCounter memCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use"))
             {
@@ -43,7 +43,7 @@ namespace Curupira.WindowsService.Service
         }
 
         // Get disk usage for all physical drives
-        private List<DiskUsageModel> GetDiskUsage()
+        private static List<DiskUsageModel> GetDiskUsage()
         {
             var disks = new List<DiskUsageModel>();
             foreach (DriveInfo drive in DriveInfo.GetDrives())
@@ -63,7 +63,7 @@ namespace Curupira.WindowsService.Service
         }
 
         // Get the time when Windows started
-        private string GetWindowsStartTime()
+        private static string GetWindowsStartTime()
         {
             try
             {

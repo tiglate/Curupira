@@ -74,7 +74,7 @@ namespace Curupira.WindowsService.Services
         }
 
         // Helper class to store WMI service data
-        private class WmiServiceData
+        private sealed class WmiServiceData
         {
             public string Description { get; set; }
             public string StartType { get; set; }

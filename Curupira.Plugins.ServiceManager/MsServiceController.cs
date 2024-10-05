@@ -93,7 +93,16 @@ namespace Curupira.Plugins.ServiceManager
 
         public void Dispose()
         {
-            _serviceController.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _serviceController?.Dispose();
+            }
         }
     }
 }

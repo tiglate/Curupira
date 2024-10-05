@@ -58,7 +58,7 @@ namespace Curupira.Plugins.ServiceManager
                             throw new InvalidOperationException("Missing or empty 'name' or 'action' attribute in a service element.");
                         }
 
-                        if (!Enum.TryParse(actionStr, true, out ActionEnum action))
+                        if (!Enum.TryParse(actionStr, true, out Action action))
                         {
                             throw new InvalidOperationException($"Invalid 'action' attribute value: {actionStr}. Valid values are: Start, Stop");
                         }

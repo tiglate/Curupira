@@ -221,7 +221,7 @@ namespace Curupira.Plugins.Installer
             }
 
             string action = component.Action == ComponentAction.Install ? "/i" : "/x";
-            string additionalParams = component.Parameters.ContainsKey("Params") ? component.Parameters["Params"] : "";
+            string additionalParams = GetAdditionalParams(component);
 
             var exitCode = await _processExecutor.ExecuteAsync("msiexec.exe", $"{action} \"{sourceFile}\" {additionalParams}", new FileInfo(sourceFile).Directory.FullName);
 
@@ -246,7 +246,7 @@ namespace Curupira.Plugins.Installer
                 throw new InvalidOperationException("Missing or empty 'SourceFile' parameter for bat/exe component.");
             }
 
-            string additionalParams = component.Parameters.ContainsKey("Params") ? component.Parameters["Params"] : "";
+            string additionalParams = GetAdditionalParams(component);
 
             // Build the command for .bat or .exe
             string command = $"\"{sourceFile}\" {additionalParams}";
@@ -265,6 +265,12 @@ namespace Curupira.Plugins.Installer
                 Logger.Error($"Execution failed with exit code {exitCode}.");
                 return false;
             }
+        }
+
+        private static string GetAdditionalParams(Component component)
+        {
+            const string paramsKey = "Params";
+            return component.Parameters.ContainsKey(paramsKey) ? component.Parameters[paramsKey] : "";
         }
 
         protected virtual void ExtractFile(ZipArchiveEntry entry, string destinationPath, bool overwrite)

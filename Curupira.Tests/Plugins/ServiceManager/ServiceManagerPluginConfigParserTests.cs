@@ -76,9 +76,9 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var stopAllBundle = config.Bundles["stop_all"];
             Assert.AreEqual(2, stopAllBundle.Services.Count);
             Assert.AreEqual("WSearch", stopAllBundle.Services[0].ServiceName);
-            Assert.AreEqual(ActionEnum.Stop, stopAllBundle.Services[0].Action);
+            Assert.AreEqual(Curupira.Plugins.ServiceManager.Action.Stop, stopAllBundle.Services[0].Action);
             Assert.AreEqual("wuauserv", stopAllBundle.Services[1].ServiceName);
-            Assert.AreEqual(ActionEnum.Stop, stopAllBundle.Services[1].Action);
+            Assert.AreEqual(Curupira.Plugins.ServiceManager.Action.Stop, stopAllBundle.Services[1].Action);
 
             // Check status_test bundle with logFile
             Assert.IsTrue(config.Bundles.ContainsKey("status_test"));

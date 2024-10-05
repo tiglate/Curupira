@@ -4,7 +4,7 @@ using System.Diagnostics;
 using Curupira.Plugins.Contract;
 using Curupira.WindowsService.Model;
 
-namespace Curupira.WindowsService.Service
+namespace Curupira.WindowsService.Services
 {
     public class EventLogService : IEventLogService
     {

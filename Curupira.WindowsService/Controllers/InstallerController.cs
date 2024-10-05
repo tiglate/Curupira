@@ -24,7 +24,7 @@ namespace Curupira.WindowsService.Controllers
             var result = await _pluginExecutorService.ExecutePluginAsync("InstallerPlugin", new Dictionary<string, string>
             {
                 { "component", componentId }
-            }).ConfigureAwait(false); ;
+            }).ConfigureAwait(false);
             return Ok(result);
         }
     }

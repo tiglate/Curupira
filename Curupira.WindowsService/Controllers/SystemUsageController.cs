@@ -1,6 +1,6 @@
 ﻿using System.Web.Http;
-using Curupira.WindowsService.Service;
 using Curupira.WindowsService.Model;
+using Curupira.WindowsService.Services;
 using Curupira.WindowsService.Attributes;
 
 namespace Curupira.WindowsService.Controllers

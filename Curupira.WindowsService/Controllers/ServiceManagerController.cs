@@ -24,7 +24,7 @@ namespace Curupira.WindowsService.Controllers
             var result = await _pluginExecutorService.ExecutePluginAsync("ServiceManagerPlugin", new Dictionary<string, string>
             {
                 { "bundle", bundleId }
-            }).ConfigureAwait(false); ;
+            }).ConfigureAwait(false);
             return Ok(result);
         }
     }

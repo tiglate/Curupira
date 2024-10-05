@@ -58,19 +58,19 @@ namespace Curupira.Plugins.ServiceManager
                         var auxSuccess = true;
                         switch (serviceAction.Action)
                         {
-                            case ActionEnum.Start:
+                            case Action.Start:
                                 auxSuccess = StartService(serviceAction, serviceController);
                                 success = success && auxSuccess;
                                 break;
-                            case ActionEnum.Stop:
+                            case Action.Stop:
                                 auxSuccess = StopService(serviceAction, serviceController);
                                 success = success && auxSuccess;
                                 break;
-                            case ActionEnum.StopOrKill:
+                            case Action.StopOrKill:
                                 auxSuccess = StopOrKillService(serviceAction, serviceController);
                                 success = success && auxSuccess;
                                 break;
-                            case ActionEnum.Status:
+                            case Action.Status:
                                 auxSuccess = GetServiceStatus(bundle.LogFile, serviceController);
                                 success = success && auxSuccess;
                                 break;

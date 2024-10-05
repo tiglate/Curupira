@@ -78,7 +78,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Start);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Start);
             var bundle = new Bundle("start_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -102,7 +102,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.StopOrKill);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.StopOrKill);
             var bundle = new Bundle("stopOrKill_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -136,7 +136,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.StopOrKill);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.StopOrKill);
             var bundle = new Bundle("stopOrKill_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -170,7 +170,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Start);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Start);
             var bundle = new Bundle("start_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -197,7 +197,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Stop);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Stop);
             var bundle = new Bundle("stop_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -222,7 +222,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.StopOrKill);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.StopOrKill);
             var bundle = new Bundle("stopOrKill_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -250,7 +250,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Status);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Status);
             var bundle = new Bundle("status_bundle") { LogFile = "C:\\temp\\services_status.txt" };
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -286,7 +286,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Stop);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Stop);
             var bundle = new Bundle("kill_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -319,7 +319,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.StopOrKill);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.StopOrKill);
             var bundle = new Bundle("stopOrKill_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -345,7 +345,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Stop);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Stop);
             var bundle = new Bundle("stop_bundle");
             bundle.Services.Add(serviceAction);
             _pluginConfig.Bundles.Add(bundle.Id, bundle);
@@ -373,7 +373,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Status);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Status);
             var bundle = new Bundle("status_bundle")
             {
                 LogFile = null  // Simulating missing logFile
@@ -402,7 +402,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Status);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Status);
             var bundle = new Bundle("status_bundle")
             {
                 LogFile = "log.txt"  // Log file is provided
@@ -435,7 +435,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         {
             // Arrange
             var serviceName = "TestService";
-            var serviceAction = new ServiceAction(serviceName, ActionEnum.Status);
+            var serviceAction = new ServiceAction(serviceName, Curupira.Plugins.ServiceManager.Action.Status);
             var bundle = new Bundle("status_bundle")
             {
                 LogFile = "log.txt"  // Log file is provided
@@ -469,8 +469,8 @@ namespace Curupira.Tests.Plugins.ServiceManager
             // Arrange
             var serviceName1 = "TestService1";
             var serviceName2 = "TestService2";
-            var serviceAction1 = new ServiceAction(serviceName1, ActionEnum.StopOrKill);
-            var serviceAction2 = new ServiceAction(serviceName2, ActionEnum.StopOrKill);
+            var serviceAction1 = new ServiceAction(serviceName1, Curupira.Plugins.ServiceManager.Action.StopOrKill);
+            var serviceAction2 = new ServiceAction(serviceName2, Curupira.Plugins.ServiceManager.Action.StopOrKill);
 
             var bundle = new Bundle("long_execution_bundle");
             bundle.Services.Add(serviceAction1);

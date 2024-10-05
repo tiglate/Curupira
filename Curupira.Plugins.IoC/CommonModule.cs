@@ -16,6 +16,7 @@ namespace Curupira.Plugins.IoC
     [ExcludeFromCodeCoverage]
     public class CommonModule : Module
     {
+        const string ConfigFilePluginConstructorParameter = "configFile";
         private readonly string _configDir;
 
         public CommonModule()
@@ -48,7 +49,7 @@ namespace Curupira.Plugins.IoC
         {
             builder.RegisterType<BackupPluginConfigParser>()
                 .As<IPluginConfigParser<BackupPluginConfig>>()
-                .WithParameter("configFile", Path.Combine(_configDir, "backup-plugin.xml"))
+                .WithParameter(ConfigFilePluginConstructorParameter, Path.Combine(_configDir, "backup-plugin.xml"))
                 .SingleInstance();
 
             builder.RegisterType<BackupPlugin>()
@@ -63,7 +64,7 @@ namespace Curupira.Plugins.IoC
 
             builder.RegisterType<InstallerPluginConfigParser>()
                 .As<IPluginConfigParser<InstallerPluginConfig>>()
-                .WithParameter("configFile", Path.Combine(_configDir, "Installer-plugin.xml"))
+                .WithParameter(ConfigFilePluginConstructorParameter, Path.Combine(_configDir, "Installer-plugin.xml"))
                 .SingleInstance();
 
             builder.RegisterType<InstallerPlugin>()
@@ -80,7 +81,7 @@ namespace Curupira.Plugins.IoC
 
             builder.RegisterType<ServiceManagerPluginConfigParser>()
                 .As<IPluginConfigParser<ServiceManagerPluginConfig>>()
-                .WithParameter("configFile", Path.Combine(_configDir, "service-manager-plugin.xml"))
+                .WithParameter(ConfigFilePluginConstructorParameter, Path.Combine(_configDir, "service-manager-plugin.xml"))
                 .SingleInstance();
 
             builder.RegisterType<ServiceManagerPlugin>()
@@ -91,7 +92,7 @@ namespace Curupira.Plugins.IoC
         {
             builder.RegisterType<FoldersCreatorPluginConfigParser>()
                 .As<IPluginConfigParser<FoldersCreatorPluginConfig>>()
-                .WithParameter("configFile", Path.Combine(_configDir, "folders-creator-plugin.xml"))
+                .WithParameter(ConfigFilePluginConstructorParameter, Path.Combine(_configDir, "folders-creator-plugin.xml"))
                 .SingleInstance();
 
             builder.RegisterType<FoldersCreatorPlugin>()

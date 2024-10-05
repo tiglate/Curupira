@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Autofac.Integration.WebApi;
-using Curupira.WindowsService.Service;
 using Curupira.WindowsService.Services;
 using System.Diagnostics.CodeAnalysis;
 

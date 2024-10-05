@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Microsoft.Win32.TaskScheduler;
 using Curupira.WindowsService.Model;
 
-namespace Curupira.WindowsService.Service
+namespace Curupira.WindowsService.Services
 {
     public class MyTaskService : IMyTaskService
     {

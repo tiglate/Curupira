@@ -193,7 +193,7 @@
     <Compile Include="WindowsService\ControlService.Designer.cs">
       <DependentUpon>ControlService.cs</DependentUpon>
     </Compile>
-    <Compile Include="Infra\GlobalExceptionFilter.cs" />
+    <Compile Include="Attributes\GlobalExceptionFilterAttribute.cs" />
     <Compile Include="Controllers\HealthController.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

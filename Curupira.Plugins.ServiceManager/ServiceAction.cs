@@ -7,9 +7,9 @@ namespace Curupira.Plugins.ServiceManager
     {
         public string ServiceName { get; set; }
 
-        public ActionEnum Action { get; set; }
+        public Action Action { get; set; }
 
-        public ServiceAction(string serviceName, ActionEnum action)
+        public ServiceAction(string serviceName, Action action)
         {
             ServiceName = serviceName;
             Action = action;

@@ -21,7 +21,7 @@ namespace Curupira.WindowsService.Controllers
         [Route("run")]
         public async Task<IHttpActionResult> RunAsync()
         {
-            var result = await _pluginExecutorService.ExecutePluginAsync("FoldersCreatorPlugin", new Dictionary<string, string>()).ConfigureAwait(false); ;
+            var result = await _pluginExecutorService.ExecutePluginAsync("FoldersCreatorPlugin", new Dictionary<string, string>()).ConfigureAwait(false);
             return Ok(result);
         }
     }

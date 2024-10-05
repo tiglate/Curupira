@@ -1,10 +1,10 @@
 ﻿using Autofac.Integration.WebApi;
 using System.Web.Http;
 using Owin;
-using Curupira.WindowsService.Infra;
 using Curupira.WindowsService.Infra.IoC;
 using Autofac;
 using Curupira.Plugins.Contract;
+using Curupira.WindowsService.Attributes;
 
 namespace Curupira.WindowsService
 {
@@ -30,7 +30,7 @@ namespace Curupira.WindowsService
                 defaults: new { id = RouteParameter.Optional }
             );
 
-            config.Filters.Add(new GlobalExceptionFilter(logger));
+            config.Filters.Add(new GlobalExceptionFilterAttribute(logger));
 
             appBuilder.UseWebApi(config);
 

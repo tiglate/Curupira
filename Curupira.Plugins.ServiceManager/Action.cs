@@ -1,6 +1,6 @@
 ﻿namespace Curupira.Plugins.ServiceManager
 {
-    public enum ActionEnum
+    public enum Action
     {
         Start,
         Stop,

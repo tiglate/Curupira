@@ -1,6 +1,6 @@
 ﻿using Curupira.WindowsService.Model;
 
-namespace Curupira.WindowsService.Service
+namespace Curupira.WindowsService.Services
 {
     public interface ISystemUsageService
     {
