@@ -13,7 +13,9 @@ namespace Curupira.Plugins.Installer
     public class ZipComponentHandler : BaseComponentHandler
     {
         private readonly long _maxAllowedUncompressedSize;
-        private long totalExtractedSize;
+        private readonly long _thresholdEntries;
+        private long _totalExtractedSize;
+        private const double compressionRatioThreshold = 10.0; // Compression ratio threshold to detect Zip Bombs
 
         public ZipComponentHandler(ILogProvider logger)
             : base(logger)
@@ -22,7 +24,14 @@ namespace Curupira.Plugins.Installer
 
             if (!long.TryParse(maxAllowedUncompressedSizeString, out _maxAllowedUncompressedSize))
             {
-                _maxAllowedUncompressedSize = 10737418240; // 10 Gb max allowed uncompressed size
+                _maxAllowedUncompressedSize = 10L * 1024 * 1024 * 1024; // 10 Gb max allowed uncompressed size
+            }
+
+            var maxZipFileEntriesString = ConfigurationManager.AppSettings["MaxZipFileEntries"];
+
+            if (!long.TryParse(maxZipFileEntriesString, out _thresholdEntries))
+            {
+                _thresholdEntries = 100_000L; // Maximum number of files allowed inside a zip file
             }
         }
 
@@ -38,7 +47,9 @@ namespace Curupira.Plugins.Installer
             Logger.Info($"Extracting '{sourceFile}' to '{targetDir}'...");
 
             //Resets the accumulator
-            totalExtractedSize = 0;
+            _totalExtractedSize = 0;
+
+            var totalEntryArchive = 0;
 
             using (var archive = ZipFile.OpenRead(sourceFile))
             {
@@ -53,6 +64,13 @@ namespace Curupira.Plugins.Installer
                     {
                         Logger.Debug($"Skipping removed entry: {entry.FullName}");
                         continue;
+                    }
+
+                    // Break if too many entries are detected
+                    if (++totalEntryArchive > _thresholdEntries)
+                    {
+                        Logger.Error($"Archive exceeds allowed entry count of {_thresholdEntries}. Potential Zip Bomb detected.");
+                        throw new InvalidOperationException($"Exceeded the maximum entry count of {_thresholdEntries}.");
                     }
 
                     ProcessEntry(entry, targetDir, ignoreUnauthorizedAccess);
@@ -104,11 +122,19 @@ namespace Curupira.Plugins.Installer
             }
             else
             {
+                // Calculate compression ratio and detect Zip Bomb attempts
+                var compressionRatio = (double)entry.Length / entry.CompressedLength;
+                if (compressionRatio > compressionRatioThreshold)
+                {
+                    Logger.Error($"File '{entry.FullName}' has a suspiciously high compression ratio ({compressionRatio}). Possible Zip Bomb attack.");
+                    throw new InvalidOperationException($"File '{entry.FullName}' exceeds allowed compression ratio of {compressionRatioThreshold}. Possible Zip Bomb detected.");
+                }
+
                 // Update total extracted size
-                totalExtractedSize += entry.Length;
+                _totalExtractedSize += entry.Length;
 
                 // If the total extracted size exceeds the allowed limit, stop extraction
-                if (totalExtractedSize > _maxAllowedUncompressedSize)
+                if (_totalExtractedSize > _maxAllowedUncompressedSize)
                 {
                     throw new InvalidOperationException($"Total extracted size exceeds the maximum allowed size of {_maxAllowedUncompressedSize / (1024 * 1024 * 1024)} GB. Possible Zip Bomb attack detected.");
                 }
