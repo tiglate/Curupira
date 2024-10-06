@@ -131,7 +131,7 @@ namespace Curupira.Plugins.Common
             }
         }
 
-        private string SanitizeMessage(string message)
+        private static string SanitizeMessage(string message)
         {
             return message?.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
         }
