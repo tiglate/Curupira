@@ -30,15 +30,15 @@ namespace Curupira.Plugins.Common
             Log = logger;
         }
 
-        public virtual void Trace(string message, params object[] args) => Log.Trace(message, args);
+        public virtual void Trace(string message, params object[] args) => Log.Trace(SanitizeMessage(message), args);
 
-        public virtual void Debug(string message, params object[] args) => Log.Debug(message, args);
+        public virtual void Debug(string message, params object[] args) => Log.Debug(SanitizeMessage(message), args);
 
-        public virtual void Info(string message, params object[] args) => Log.Info(message, args);
+        public virtual void Info(string message, params object[] args) => Log.Info(SanitizeMessage(message), args);
 
-        public virtual void Warn(string message, params object[] args) => Log.Warn(message, args);
+        public virtual void Warn(string message, params object[] args) => Log.Warn(SanitizeMessage(message), args);
 
-        public virtual void Fatal(string message, params object[] args) => Log.Fatal(message, args);
+        public virtual void Fatal(string message, params object[] args) => Log.Fatal(SanitizeMessage(message), args);
 
         public virtual void Fatal(Exception exception, string message = null, params object[] args)
         {
@@ -52,7 +52,7 @@ namespace Curupira.Plugins.Common
             }
         }
 
-        public virtual void Error(string message, params object[] args) => Log.Error(message, args);
+        public virtual void Error(string message, params object[] args) => Log.Error(SanitizeMessage(message), args);
 
         public virtual void Error(Exception exception, string message = null, params object[] args)
         {
@@ -129,6 +129,11 @@ namespace Curupira.Plugins.Common
             {
                 sb.Length -= 2;
             }
+        }
+
+        private string SanitizeMessage(string message)
+        {
+            return message?.Replace(Environment.NewLine, "").Replace("\n", "").Replace("\r", "");
         }
     }
 }
