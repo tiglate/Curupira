@@ -1,4 +1,4 @@
-name: Curupira Console .NET Framework Build
+name: Console App Build
 
 on:
   push:
