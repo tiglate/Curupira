@@ -1,6 +1,12 @@
 # Curupira - Ampliar Project
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=tiglate_Curupira&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=tiglate_Curupira)
+<div align="center">
+   [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=tiglate_Curupira&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=tiglate_Curupira)
+   &nbsp;
+   [![CI Build](https://github.com/tiglate/Curupira/actions/workflows/curupira-console.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/curupira-console.yml)
+   &nbsp;
+   [![CodeQL Scan](https://github.com/tiglate/Curupira/actions/workflows/codeql.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/codeql.yml)
+</div>
 
 Curupira is part of the **Ampliar Project**, an initiative that aims to offer high-quality, free, and open-source software. Curupira provides an extensible platform with powerful automation capabilities through plugins, making it suitable for a variety of use cases like file manipulation, software deployment, and system management.
 
