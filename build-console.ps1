@@ -3,6 +3,10 @@ function Main {
     param (
         [string]$target = "package"  # Default target is 'package'
     )
+	
+	if ([string]::IsNullOrEmpty($target)) {
+		$target = "package"
+	}
 
     switch ($target) {
         "package" {
@@ -41,10 +45,21 @@ function Package {
     Copy-FilesToDist $distPath
 }
 
-# Clean target: Delete the dist folder and release binaries
+# Clean target: Delete the dist folder and debug/release binaries
 function Clean {
+	# Find the msbuild.exe path
+    $msbuildPath = Find-MSBuild
+    if (-not $msbuildPath) {
+        Write-Host "MSBuild not found. Exiting script."
+        exit 1
+    }
+
+	# Clean the solution build output
+    & "$msbuildPath" "Curupira.sln" /t:Clean /p:Configuration=Debug
+	& "$msbuildPath" "Curupira.sln" /t:Clean /p:Configuration=Release
+
     $distPath = Join-Path (Get-ScriptDirectory) "dist"
-    $releasePath = Join-Path (Get-ScriptDirectory) "Curupira.AppClient\bin\Release"
+    
 
     # Remove dist folder
     if (Test-Path $distPath) {
@@ -52,11 +67,6 @@ function Clean {
         Write-Host "Deleted dist folder."
     }
 
-    # Remove Release binaries
-    if (Test-Path $releasePath) {
-        Remove-Item -Recurse -Force $releasePath
-        Write-Host "Deleted release binaries."
-    }
 }
 
 # Test target: Run unit tests using vstest.console.exe
