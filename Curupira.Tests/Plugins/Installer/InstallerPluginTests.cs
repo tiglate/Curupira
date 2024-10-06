@@ -69,7 +69,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                     using (var entryStream = zipEntry.Open())
                     using (var writer = new StreamWriter(entryStream))
                     {
-                        await writer.WriteAsync("This is a test file inside the zip.");
+                        await writer.WriteAsync("This is a test file inside the zip.").ConfigureAwait(false);
                     }
                 }
             }
@@ -77,7 +77,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             try
             {
                 // Act
-                var result = await _plugin.ExecuteAsync(commandLineArgs);
+                var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsTrue(result, "The plugin should have successfully extracted the ZIP component.");
@@ -115,7 +115,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                 .ReturnsAsync(0);  // Exit code 0 means success
 
             // Act
-            var result = await _plugin.ExecuteAsync(commandLineArgs);
+            var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should have successfully executed the MSI component.");
@@ -142,7 +142,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                 .ReturnsAsync(0);  // Exit code 0 means success
 
             // Act
-            var result = await _plugin.ExecuteAsync(commandLineArgs);
+            var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should have successfully executed the BAT component.");
@@ -160,7 +160,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
         };
 
             // Act
-            var result = await _plugin.ExecuteAsync(commandLineArgs);
+            var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when the component is not found.");
@@ -214,7 +214,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             try
             {
                 // Act
-                var result = await _plugin.ExecuteAsync(commandLineArgs);
+                var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsTrue(result, "The plugin should have successfully extracted the ZIP component, skipping the specified items.");
@@ -278,7 +278,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             try
             {
                 // Act
-                var result = await _plugin.ExecuteAsync(commandLineArgs);
+                var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsTrue(result, "The plugin should have successfully extracted the ZIP component, including directories.");
@@ -321,7 +321,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                 .ReturnsAsync(1);  // Exit code 1 means failure
 
             // Act
-            var result = await _plugin.ExecuteAsync(commandLineArgs);
+            var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when the MSI execution fails.");
@@ -352,7 +352,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                 .ReturnsAsync(1);  // Exit code 1 means failure
 
             // Act
-            var result = await _plugin.ExecuteAsync(commandLineArgs);
+            var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when the BAT/EXE execution fails.");
@@ -379,7 +379,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var commandLineArgs = new Dictionary<string, string> { { "component", "TestMsi" } };
 
             // Act
-            var result = await _plugin.ExecuteAsync(commandLineArgs);
+            var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when 'SourceFile' is missing for msi component.");
@@ -402,7 +402,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var commandLineArgs = new Dictionary<string, string> { { "component", "TestBat" } };
 
             // Act
-            var result = await _plugin.ExecuteAsync(commandLineArgs);
+            var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when 'SourceFile' is missing for a .bat/.exe component.");
@@ -426,7 +426,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var commandLineArgs = new Dictionary<string, string> { { "component", "TestZip" } };
 
             // Act
-            var result = await _plugin.ExecuteAsync(commandLineArgs);
+            var result = await _plugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when 'SourceFile' or 'TargetDir' is missing for a zip component.");
@@ -466,7 +466,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                         using (var entryStream = zipEntry.Open())
                         using (var writer = new StreamWriter(entryStream))
                         {
-                            await writer.WriteAsync($"This is a test file {i} inside the zip.");
+                            await writer.WriteAsync($"This is a test file {i} inside the zip.").ConfigureAwait(false);
                         }
                     }
                 }
@@ -494,7 +494,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             using (var sourceToken = new CancellationTokenSource())
             {
                 sourceToken.CancelAfter(500);
-                var result = await pluginMock.Object.ExecuteAsync(commandLineArgs, sourceToken.Token);
+                var result = await pluginMock.Object.ExecuteAsync(commandLineArgs, sourceToken.Token).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsFalse(result, "Execution should be cancelled when the plugin is killed.");

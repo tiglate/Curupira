@@ -79,7 +79,7 @@ namespace Curupira.Tests.Plugins.Backup
                 var commandLineArgs = new Dictionary<string, string>();
 
                 // Act
-                var result = await backupPlugin.ExecuteAsync(commandLineArgs);
+                var result = await backupPlugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsTrue(result, "Backup should be created successfully.");
@@ -105,12 +105,12 @@ namespace Curupira.Tests.Plugins.Backup
                     var zipFileName = $"{DateTime.Now.AddDays(-i):yyyyMMddhhmmss}-testArchive.zip";
                     using (var stream = File.Open(Path.Combine(_destinationFolder, zipFileName), FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite))
                     {
-                        await Task.Delay(100);
+                        await Task.Delay(100).ConfigureAwait(false);
                     }
                 }
 
                 // Act
-                var result = await backupPlugin.ExecuteAsync(new Dictionary<string, string>());
+                var result = await backupPlugin.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsTrue(result, "Backup should be created successfully.");
@@ -142,7 +142,7 @@ namespace Curupira.Tests.Plugins.Backup
                 backupPlugin.Init();
 
                 // Act
-                var result = await backupPlugin.ExecuteAsync(new Dictionary<string, string>());
+                var result = await backupPlugin.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsTrue(result, "Backup should succeed even if there are no files to back up.");
@@ -194,7 +194,7 @@ namespace Curupira.Tests.Plugins.Backup
             {
                 sourceToken.CancelAfter(500);
 
-                var result = await backupPluginMock.Object.ExecuteAsync(commandLineArgs, sourceToken.Token);
+                var result = await backupPluginMock.Object.ExecuteAsync(commandLineArgs, sourceToken.Token).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsFalse(result, "Backup should stop when the cancellation token is trigged.");
@@ -223,7 +223,7 @@ namespace Curupira.Tests.Plugins.Backup
                 backupPlugin.Init();
 
                 // Act
-                var result = await backupPlugin.ExecuteAsync(new Dictionary<string, string>());
+                var result = await backupPlugin.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsFalse(result, "Backup should fail if the destination path is invalid.");
@@ -257,7 +257,7 @@ namespace Curupira.Tests.Plugins.Backup
                 };
 
                 // Act
-                var result = await backupPlugin.ExecuteAsync(commandLineArgs);
+                var result = await backupPlugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsTrue(result, "Backup should be processed successfully for the provided backup id.");
@@ -294,7 +294,7 @@ namespace Curupira.Tests.Plugins.Backup
                 };
 
                 // Act
-                var result = await backupPlugin.ExecuteAsync(commandLineArgs);
+                var result = await backupPlugin.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsFalse(result, "Backup should not be processed for an invalid backup id.");

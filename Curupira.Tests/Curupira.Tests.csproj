@@ -144,6 +144,7 @@
     <Compile Include="Plugins\Common\BasePluginTests.cs" />
     <Compile Include="Plugins\Common\FileSystemHelperTests.cs" />
     <Compile Include="Plugins\Common\NLogProviderTests.cs" />
+    <Compile Include="Plugins\Common\TestPlugin.cs" />
     <Compile Include="Plugins\FoldersCreator\FoldersCreatorPluginConfigParserTests.cs" />
     <Compile Include="Plugins\FoldersCreator\FoldersCreatorPluginTests.cs" />
     <Compile Include="Plugins\FoldersCreator\FoldersCreatorPluginWithDelay.cs" />

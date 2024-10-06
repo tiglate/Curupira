@@ -29,7 +29,7 @@ namespace Curupira.Tests.AppClient.Services
 
             public new void AttachProgressHandler(IPlugin plugin, bool noProgressBar) => base.AttachProgressHandler(plugin, noProgressBar);
             public new bool TryInitializePlugin(IPlugin plugin, string pluginName) => base.TryInitializePlugin(plugin, pluginName);
-            public new Task<bool> TryExecutePluginAsync(IPlugin plugin, Options options) => base.TryExecutePluginAsync(plugin, options);
+            public new Task<bool> TryExecutePluginAsync(IPlugin plugin, Options options, CancellationToken cancellationToken) => base.TryExecutePluginAsync(plugin, options, cancellationToken);
             public new IDictionary<string, string> ParseParams(string paramString) => base.ParseParams(paramString);
         }
 
@@ -69,7 +69,7 @@ namespace Curupira.Tests.AppClient.Services
             var options = new Options(_consoleServiceMock.Object) { Plugin = "NonExistentPlugin" };
 
             // Act
-            var result = await _pluginExecutor.ExecutePluginAsync(options);
+            var result = await _pluginExecutor.ExecutePluginAsync(options).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result);
@@ -85,7 +85,7 @@ namespace Curupira.Tests.AppClient.Services
             _pluginMock.Setup(p => p.Init()).Throws(new Exception("Initialization failed"));
 
             // Act
-            var result = await _pluginExecutor.ExecutePluginAsync(options);
+            var result = await _pluginExecutor.ExecutePluginAsync(options).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result);
@@ -100,7 +100,7 @@ namespace Curupira.Tests.AppClient.Services
             _pluginMock.Setup(p => p.ExecuteAsync(It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             // Act
-            var result = await _pluginExecutor.ExecutePluginAsync(options);
+            var result = await _pluginExecutor.ExecutePluginAsync(options).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result);
@@ -117,7 +117,7 @@ namespace Curupira.Tests.AppClient.Services
             _pluginMock.Setup(p => p.ExecuteAsync(It.IsAny<IDictionary<string, string>>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
             // Act
-            var result = await _pluginExecutor.ExecutePluginAsync(options);
+            var result = await _pluginExecutor.ExecutePluginAsync(options).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result);

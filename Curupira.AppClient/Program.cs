@@ -13,7 +13,7 @@ namespace Curupira.AppClient
             {
                 using (var runner = new AppRunner(container))
                 {
-                    return await runner.RunAsync(args);
+                    return await runner.RunAsync(args).ConfigureAwait(false);
                 }
             }
         }

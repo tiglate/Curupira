@@ -53,7 +53,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var commandLineArgs = new Dictionary<string, string>();
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when the 'bundle' argument is missing.");
@@ -67,7 +67,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             var commandLineArgs = new Dictionary<string, string> { { "bundle", "nonexistent_bundle" } };
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when the specified bundle is not found.");
@@ -90,7 +90,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should return true when the service is started successfully.");
@@ -122,7 +122,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should return true when stopping the service fails but killing the process succeeds.");
@@ -156,7 +156,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when stopping the service fails and killing the process also fails.");
@@ -184,7 +184,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when the service is already running.");
@@ -210,7 +210,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should return true when the service is stopped successfully.");
@@ -237,7 +237,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should return true when the service stops successfully.");
@@ -273,7 +273,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                 });
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should return true when the service status is logged successfully.");
@@ -305,7 +305,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when stopping the service fails.");
@@ -334,7 +334,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should return true even if the service cannot be stopped.");
@@ -360,7 +360,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should return true even if the service cannot be stopped (as per current logic).");
@@ -391,7 +391,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceControllerFactoryMock.Setup(f => f.Build(serviceName)).Returns(_serviceControllerMock.Object);
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when logFile is missing.");
@@ -424,7 +424,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                 .Throws(new System.IO.IOException("Disk is full"));
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when an IOException occurs.");
@@ -457,7 +457,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
                 .Throws(new Exception("Unexpected error"));
 
             // Act
-            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs);
+            var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when a general exception occurs.");
@@ -494,7 +494,7 @@ namespace Curupira.Tests.Plugins.ServiceManager
             {
                 sourceToken.CancelAfter(500);
 
-                var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs, sourceToken.Token);
+                var result = await _serviceManagerPluginMock.Object.ExecuteAsync(commandLineArgs, sourceToken.Token).ConfigureAwait(false);
 
                 Assert.IsFalse(result, "The plugin should return false when the cancellation token is triggered.");
             }

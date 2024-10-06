@@ -53,7 +53,7 @@ namespace Curupira.AppClient
             if (options.ListPlugins)
             {
                 ListAvailablePlugins();
-                return await Task.FromResult(0);
+                return 0;
             }
 
             if (!options.NoLogo)

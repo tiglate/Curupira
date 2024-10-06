@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Curupira.Plugins.Common;
 using Curupira.Plugins.Contract;
-using System.Threading;
 
 namespace Curupira.Tests.Plugins.Common
 {
@@ -70,33 +67,6 @@ namespace Curupira.Tests.Plugins.Common
             // Assert
             StringAssert.StartsWith(resultWithTimestamp, "[", "Formatted message with timestamp should start with a timestamp.");
             StringAssert.EndsWith(resultWithoutTimestamp, "This is a test.", "Formatted message without timestamp should not include a timestamp.");
-        }
-    }
-
-    // Helper class to test the BasePlugin
-    public class TestPlugin : BasePlugin<object>
-    {
-        public TestPlugin(string pluginName, ILogProvider logger, IPluginConfigParser<object> configParser)
-            : base(pluginName, logger, configParser) { }
-
-        public void RaiseProgress(PluginProgressEventArgs e)
-        {
-            OnProgress(e);
-        }
-
-        public string FormatTestLogMessage(string method, string message, bool includeTimestamp = false)
-        {
-            return FormatLogMessage(method, message, includeTimestamp);
-        }
-
-        protected override void Dispose(bool disposing)
-        {
-            //Nothing to clean up
-        }
-
-        public override Task<bool> ExecuteAsync(IDictionary<string, string> commandLineArgs, CancellationToken cancelationToken = default)
-        {
-            return Task.FromResult(true);
         }
     }
 }

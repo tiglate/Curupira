@@ -14,6 +14,7 @@ using System.Configuration;
 using NLog.Config;
 using NLog.Targets;
 using System.IO;
+using System.Threading;
 
 namespace Curupira.Tests.AppClient
 {
@@ -87,7 +88,7 @@ namespace Curupira.Tests.AppClient
                 .Returns(plugins);
 
             // Act
-            var result = await _appRunner.RunAsync(new string[] { "-a" });
+            var result = await _appRunner.RunAsync(new string[] { "-a" }).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(0, result);  // Should return 0 for success
@@ -101,28 +102,28 @@ namespace Curupira.Tests.AppClient
         public async Task RunAsync_ShouldReturnZero_WhenPluginExecutionIsSuccessful()
         {
             // Arrange
-            _pluginExecutorMock.Setup(p => p.ExecutePluginAsync(It.IsAny<Options>())).ReturnsAsync(true);
+            _pluginExecutorMock.Setup(p => p.ExecutePluginAsync(It.IsAny<Options>(), It.IsAny<CancellationToken>())).ReturnsAsync(true);
 
             // Act
-            var result = await _appRunner.RunAsync(new[] { "--plugin", "TestPlugin" });
+            var result = await _appRunner.RunAsync(new[] { "--plugin", "TestPlugin" }).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(0, result);
-            _pluginExecutorMock.Verify(p => p.ExecutePluginAsync(It.IsAny<Options>()), Times.Once);
+            _pluginExecutorMock.Verify(p => p.ExecutePluginAsync(It.IsAny<Options>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
         public async Task RunAsync_ShouldReturnOne_WhenPluginExecutionFails()
         {
             // Arrange
-            _pluginExecutorMock.Setup(p => p.ExecutePluginAsync(It.IsAny<Options>())).ReturnsAsync(false);
+            _pluginExecutorMock.Setup(p => p.ExecutePluginAsync(It.IsAny<Options>(), It.IsAny<CancellationToken>())).ReturnsAsync(false);
 
             // Act
-            var result = await _appRunner.RunAsync(new[] { "--plugin", "TestPlugin" });
+            var result = await _appRunner.RunAsync(new[] { "--plugin", "TestPlugin" }).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, result);
-            _pluginExecutorMock.Verify(p => p.ExecutePluginAsync(It.IsAny<Options>()), Times.Once);
+            _pluginExecutorMock.Verify(p => p.ExecutePluginAsync(It.IsAny<Options>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [TestMethod]
@@ -132,7 +133,7 @@ namespace Curupira.Tests.AppClient
             _appRunner.SetParseResult(new List<Error> { new DummyError() });
 
             // Act
-            var result = await _appRunner.RunAsync(new[] { "--invalid-option" });
+            var result = await _appRunner.RunAsync(new[] { "--invalid-option" }).ConfigureAwait(false);
 
             // Assert
             Assert.AreEqual(1, result);
@@ -293,7 +294,7 @@ namespace Curupira.Tests.AppClient
 
         public new async Task<int> RunAsync(string[] args)
         {
-            return await base.RunAsync(args);
+            return await base.RunAsync(args).ConfigureAwait(false);
         }
 
         public int InvokeHandleParseError(IEnumerable<Error> errors)

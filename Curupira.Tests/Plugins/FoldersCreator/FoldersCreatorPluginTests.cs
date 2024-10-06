@@ -62,7 +62,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             _testDirectories.Add(directory2);
 
             // Act
-            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>());
+            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "Plugin should execute successfully.");
@@ -82,7 +82,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             _testDirectories.Add(existingDirectory);
 
             // Act
-            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>());
+            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "Plugin should execute successfully.");
@@ -98,7 +98,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             _pluginConfig.DirectoriesToCreate.Add(invalidDirectory);
 
             // Act
-            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>());
+            var result = await _foldersCreatorPlugin.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "Plugin should fail when provided with an invalid directory.");
@@ -126,7 +126,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             {
                 sourceToken.CancelAfter(500);
 
-                var result = await plugin.ExecuteAsync(new Dictionary<string, string>(), sourceToken.Token);
+                var result = await plugin.ExecuteAsync(new Dictionary<string, string>(), sourceToken.Token).ConfigureAwait(false);
 
                 // Assert
                 Assert.IsFalse(result, "Execution should be cancelled when the plugin is killed.");
@@ -233,7 +233,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
             // Assert
             Assert.IsTrue(result, "The plugin should successfully create the network share directory.");
@@ -259,7 +259,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when IOException is thrown.");
@@ -284,7 +284,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when UnauthorizedAccessException is thrown.");
@@ -309,7 +309,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when it doesn't have permission to create a directory.");
@@ -334,7 +334,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
             pluginMock.Object.Init(); // Initialize the plugin
 
             // Act
-            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>());
+            var result = await pluginMock.Object.ExecuteAsync(new Dictionary<string, string>()).ConfigureAwait(false);
 
             // Assert
             Assert.IsFalse(result, "The plugin should return false when an exception is thrown during directory creation.");

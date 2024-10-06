@@ -47,12 +47,12 @@ namespace Curupira.Plugins.Backup
                     }
 
                     // Enforce the backup limit asynchronously
-                    await Task.Run(() => EnforceBackupLimit(archive.Id));
+                    await Task.Run(() => EnforceBackupLimit(archive.Id)).ConfigureAwait(false);
 
                     // Create the zip archive asynchronously
                     using (var zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
                     {
-                        if (!await Task.Run(() => AddItemsToZip(zipArchive, archive, cancelationToken)))
+                        if (!await Task.Run(() => AddItemsToZip(zipArchive, archive, cancelationToken)).ConfigureAwait(false))
                         {
                             return false;
                         }
@@ -63,7 +63,7 @@ namespace Curupira.Plugins.Backup
                 });
 
                 // Wait for all tasks to complete
-                success = Array.TrueForAll(await Task.WhenAll(tasks), successful => successful);
+                success = Array.TrueForAll(await Task.WhenAll(tasks).ConfigureAwait(false), successful => successful);
             }
             catch (OperationCanceledException)
             {

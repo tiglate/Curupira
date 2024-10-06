@@ -28,7 +28,9 @@ namespace Curupira.Plugins.Installer
 
             OnProgress(new PluginProgressEventArgs(0, "Executing..."));
 
-            var exitCode = await _processExecutor.ExecuteAsync("msiexec.exe", $"{action} \"{sourceFile}\" {additionalParams}", new FileInfo(sourceFile).Directory.FullName);
+            token.ThrowIfCancellationRequested();
+
+            var exitCode = await _processExecutor.ExecuteAsync("msiexec.exe", $"{action} \"{sourceFile}\" {additionalParams}", new FileInfo(sourceFile).Directory.FullName).ConfigureAwait(false);
 
             OnProgress(new PluginProgressEventArgs(0, "Completed."));
 

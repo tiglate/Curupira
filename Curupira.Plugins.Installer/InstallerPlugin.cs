@@ -53,7 +53,7 @@ namespace Curupira.Plugins.Installer
                 {
                     try
                     {
-                        success = success && await handler.HandleAsync(component, ignoreUnauthorizedAccess, cancelationToken);
+                        success = success && await handler.HandleAsync(component, ignoreUnauthorizedAccess, cancelationToken).ConfigureAwait(false);
                     }
                     catch (OperationCanceledException)
                     {

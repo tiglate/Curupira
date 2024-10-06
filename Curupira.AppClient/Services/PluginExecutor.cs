@@ -2,6 +2,7 @@
 using Curupira.Plugins.Contract;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Curupira.AppClient.Services
@@ -21,7 +22,7 @@ namespace Curupira.AppClient.Services
             _consoleService = consoleService;
         }
 
-        public async Task<bool> ExecutePluginAsync(Options options)
+        public async Task<bool> ExecutePluginAsync(Options options, CancellationToken cancellationToken = default)
         {
             _logger.TraceMethod(nameof(PluginExecutor), nameof(ExecutePluginAsync), nameof(options), options);
 
@@ -52,7 +53,7 @@ namespace Curupira.AppClient.Services
 
                 AttachProgressHandler(plugin, options.NoProgressBar);
 
-                bool success = await TryExecutePluginAsync(plugin, options);
+                var success = await TryExecutePluginAsync(plugin, options, cancellationToken).ConfigureAwait(false);
 
                 if (success)
                 {
@@ -120,14 +121,14 @@ namespace Curupira.AppClient.Services
             }
         }
 
-        protected virtual Task<bool> TryExecutePluginAsync(IPlugin plugin, Options options)
+        protected virtual Task<bool> TryExecutePluginAsync(IPlugin plugin, Options options, CancellationToken cancellationToken)
         {
             _logger.TraceMethod(nameof(PluginExecutor), nameof(TryExecutePluginAsync), nameof(plugin), plugin, nameof(options), options);
 
             try
             {
                 var pluginParams = ParseParams(options.Params);
-                return plugin.ExecuteAsync(pluginParams);
+                return plugin.ExecuteAsync(pluginParams, cancellationToken);
             }
             catch (Exception ex)
             {
