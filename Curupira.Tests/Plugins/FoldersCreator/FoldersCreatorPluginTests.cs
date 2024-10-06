@@ -152,7 +152,7 @@ namespace Curupira.Tests.Plugins.FoldersCreator
         public void HasCreateDirectoryPermission_ShouldReturnFalse_WhenUserDoesNotHavePermission()
         {
             // Arrange
-            var protectedDirectory = @"C:\Windows"; // Assume most users don't have write access to C:\Windows
+            var protectedDirectory = @"C:\System Volume Information"; // Assume most users don't have write access to this folder
 
             // Act
             var result = InvokeHasCreateDirectoryPermission(protectedDirectory);

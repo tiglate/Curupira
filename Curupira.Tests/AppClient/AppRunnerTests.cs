@@ -11,6 +11,9 @@ using System;
 using NLog;
 using Curupira.Plugins.Contract;
 using System.Configuration;
+using NLog.Config;
+using NLog.Targets;
+using System.IO;
 
 namespace Curupira.Tests.AppClient
 {
@@ -26,6 +29,8 @@ namespace Curupira.Tests.AppClient
         [TestInitialize]
         public void Setup()
         {
+            ConfigureNLog();
+
             _pluginExecutorMock = new Mock<IPluginExecutor>();
             _consoleServiceMock = new Mock<IConsoleService>();
             _progressBarServiceMock = new Mock<IProgressBarService>();
@@ -46,6 +51,14 @@ namespace Curupira.Tests.AppClient
         public void Cleanup()
         {
             _appRunner?.Dispose();
+
+            var shortdate = DateTime.Now.ToString("yyyyMMdd");
+            var logFile = Path.Combine(Path.GetTempPath(), $"console-${shortdate}.log");
+
+            if (File.Exists(logFile))
+            {
+                File.Delete(logFile);
+            }
         }
 
         [TestMethod]
@@ -215,6 +228,34 @@ namespace Curupira.Tests.AppClient
             }
         }
 
+        private static void ConfigureNLog()
+        {
+            var config = new LoggingConfiguration();
+            var shortdate = DateTime.Now.ToString("yyyyMMdd");
+
+            // File Target
+            var fileTarget = new FileTarget("file")
+            {
+                FileName = Path.Combine(Path.GetTempPath(), $"console-${shortdate}.log"),
+                Layout = "${longdate}|${level:uppercase=true}|${message} ${exception:format=tostring}"
+            };
+            config.AddTarget(fileTarget);
+
+            // Console Target
+            var consoleTarget = new ConsoleTarget("console")
+            {
+                WriteBuffer = true,
+                Layout = "${longdate}|${level:uppercase=true}|${message} ${exception:format=tostring}"
+            };
+            config.AddTarget(consoleTarget);
+
+            // Rules
+            config.LoggingRules.Add(new LoggingRule("*", LogLevel.Info, fileTarget) { RuleName = "fileRule" });
+            config.LoggingRules.Add(new LoggingRule("*", LogLevel.Trace, consoleTarget) { RuleName = "consoleRule" });
+
+            // Apply Configuration
+            LogManager.Configuration = config;
+        }
     }
 
     public class DummyError : Error
