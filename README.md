@@ -1,4 +1,4 @@
-# Curupira - Ampliar Project
+# 🌳 Curupira - Your Friendly Automation Companion for Windows Servers! 🦥
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=tiglate_Curupira&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=tiglate_Curupira)
 &nbsp;
@@ -6,119 +6,50 @@
 &nbsp;
 [![CodeQL Scan](https://github.com/tiglate/Curupira/actions/workflows/codeql.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/codeql.yml)
 
-Curupira is part of the **Ampliar Project**, an initiative that aims to offer high-quality, free, and open-source software. Curupira provides an extensible platform with powerful automation capabilities through plugins, making it suitable for a variety of use cases like file manipulation, software deployment, and system management.
+👋 Hey there, fellow IT wizards! ✨
 
-## Available Plugins
+Tired of manually connecting to your Windows servers via RDP to perform routine tasks like software installations, updates, and backups? 😫  Wish there was a simpler, more secure way to automate these repetitive chores? 🤔
 
-The Curupira platform currently supports the following plugins:
+Fear not, for **Curupira** is here to the rescue! 🦸
 
-### 1. **Installer Plugin**
-   - **Handles**: ZIP files, MSI installers, Windows Executables, and BAT scripts.
-   - **Features**:
-     - Extract files from ZIP archives.
-     - Install or uninstall MSI packages.
-     - Execute EXE or BAT scripts.
-   - **Usage**:
-     - Command-line options can control source files, target directories, and more.
+## 🤔 What is Curupira?
 
-### 2. **Folders Creator Plugin**
-   - **Handles**: Creation of directory structures.
-   - **Features**:
-     - Create multiple directories as part of the automation process.
-     - Validate existing directory paths and permissions.
+Curupira is a lightweight, open-source "Command and Control Server" designed to streamline your Windows server management tasks. Think of it as your trusty sidekick, always ready to lend a helping hand (or paw! 🐾) with those tedious server chores. 😉
 
-### 3. **Service Manager Plugin**
-   - **Handles**: Managing Windows Services.
-   - **Features**:
-     - Start or stop Windows services defined in configuration.
-     - Manage service bundles for batch operations.
+## ✨ Why Curupira?
 
-## Command Line Usage
+In small IT departments or organizations without dedicated automation tools, managing Windows servers often involves:
 
-Curupira is built as a console application that can be extended with different plugins. The primary command-line interface supports various operations using the `-p` (plugin) and other options.
+* **Manual RDP connections:**  Someone from infrastructure, DevOps, IT Ops, or even the development team has to  remotely connect to the server and perform tasks manually. 🤯
+* **Tribal knowledge:**  The steps required for non-trivial procedures (like application installations) often reside solely in the minds of a few individuals (and rarely in proper documentation). 🤫
+* **Error-prone processes:** Manual processes are more susceptible to human error. 😓
+* **Lack of accountability:** Manual processes lack logs or audit trails, making it difficult to track changes and troubleshoot issues. 🕵️‍♂️
+* **Security risks:** Unmonitored manual processes can leave your servers vulnerable to malicious activities. 🚨
 
-### Basic Command:
-```
-Curupira.Console.exe --plugin <plugin-name> [options]
-```
+While professional automation tools exist, they often come with hefty price tags and steep learning curves, making them impractical for smaller teams. 😵‍💫  Curupira offers a **free**, **easy-to-use** alternative that simplifies server automation without breaking the bank or requiring extensive training. 💰
 
-### Example Commands:
-1. **To execute the Installer Plugin**:
-    ```
-    Curupira.Console.exe --plugin Installer --params SourceFile=C:\example.zip TargetDir=C:\output
-    ```
-2. **To list available plugins**:
-    ```
-    Curupira.Console.exe --list-plugins
-    ```
+## 🛡️ Secure by Design
 
-### Available Command-Line Options:
-- `-p, --plugin`: The name of the plugin to execute.
-- `-l, --level`: Set the log level (optional). Default is "Info".
-- `-n, --no-logo`: Hides the application logo.
-- `-b, --no-progressbar`: Disables the progress bar.
-- `-a, --list-plugins`: Lists all available plugins.
-- `--params`: Additional parameters specific to the plugin.
+Curupira prioritizes security by limiting actions to those pre-defined in a configuration file (currently supports XML format). This "whitelist" approach minimizes the attack surface and ensures that only authorized actions can be executed. 💪
 
-### Example Configuration:
-The configuration for each plugin can be specified using XML or JSON, depending on the plugin’s needs. Each plugin may have its own specific parameters.
+## 🚀 Two Ways to Run Curupira
 
-## REST API Usage
+1. **Command-line Interface (CLI):** Ideal for integrating Curupira with scripts (*.bat, PowerShell, Python, etc.) and testing configuration files. ⌨️
+2. **REST API:** Curupira can be installed as a Windows NT Service, exposing a REST API for remote execution. Securely access and manage your servers from any application or script with an API key. 🌐
 
-Curupira can also be deployed as a REST API for remote execution of plugins. The API exposes several endpoints for managing automation tasks.
+## 🛠️ Built with Developers in Mind
 
-### Example Endpoints:
-1. **Execute a Plugin**:
-   - `POST /api/plugins/execute`
-   - **Request Body**:
-     ```json
-     {
-       "plugin": "Installer",
-       "params": {
-         "SourceFile": "C:\\example.zip",
-         "TargetDir": "C:\\output"
-       }
-     }
-     ```
-   - **Response**:
-     - Status 200: Success
-     - Status 400: Invalid parameters
+* **C# and .NET Framework 4.8:** Ensures broad compatibility with both new and older Windows servers and workstations. 💻
+* **Plugin-based architecture:**  Easily extend Curupira's functionality with custom plugins while maintaining code organization and reusability. 🧩
+* **Comprehensive testing:**  With a focus on server stability, Curupira boasts high test coverage (at least 80%). 🧪
+* **SonarCloud and CodeQL integration:**  Continuous code quality and security analysis with SonarCloud and CodeQL ensure a robust and secure codebase. 📈
 
-2. **List Plugins**:
-   - `GET /api/plugins`
-   - **Response**:
-     ```json
-     {
-       "plugins": [
-         "Installer",
-         "FoldersCreator",
-         "ServiceManager"
-       ]
-     }
-     ```
+## 📖 How to Get Started
 
-## Getting Started
+Curupira is distributed under the GPL v3 license. Feel free to clone the repository or download a pre-compiled package. It's 100% free! 😊
 
-1. **Clone the Repository**:
-    ```bash
-    git clone https://github.com/your-repo/curupira.git
-    cd curupira
-    ```
+* **Clone the repository:** `git clone [repository URL]`
 
-2. **Build the Solution**:
-    - Open the solution in Visual Studio or use the command line:
-    ```bash
-    msbuild Curupira.sln /p:Configuration=Release
-    ```
+**Contributions, bug reports, and feature requests are always welcome!** 🙌
 
-3. **Run the Application**:
-    ```bash
-    Curupira.Console.exe --plugin Installer --params SourceFile=C:\example.zip TargetDir=C:\output
-    ```
-
-4. **Deploy the REST API**:
-    - Follow standard deployment practices for .NET applications to expose the API in your environment.
-
-## Contributing
-
-We welcome contributions to Curupira and the broader **Ampliar Project**. Please refer to the [contributing guide](CONTRIBUTING.md) for details on how to get started.
+Let Curupira be your go-to solution for simple, secure, and efficient Windows server automation. Happy automating! 😄
