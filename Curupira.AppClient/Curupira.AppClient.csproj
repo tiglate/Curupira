@@ -162,9 +162,8 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="NLog.config">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="NLog.Debug.config" />
+    <None Include="NLog.Release.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -210,4 +209,17 @@
     </BootstrapperPackage>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <None Update="NLog.Debug.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>NLog.config</TargetPath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <None Update="NLog.Release.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>NLog.config</TargetPath>
+    </None>
+  </ItemGroup>
 </Project>

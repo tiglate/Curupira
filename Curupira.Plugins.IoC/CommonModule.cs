@@ -28,8 +28,11 @@ namespace Curupira.Plugins.IoC
 
             if (string.IsNullOrWhiteSpace(_configDir))
             {
-                _configDir = ConfigurationManager.AppSettings["ConfigDir"];
+#if DEBUG
                 _configDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config");
+#else
+                _configDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, @"..\conf");
+#endif
             }
         }
 

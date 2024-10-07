@@ -17,7 +17,7 @@ namespace Curupira.AppClient
         [Option('p', "plugin", HelpText = "The name of the plugin to execute.")]
         public string Plugin { get; set; }
 
-        [Option('l', "level", Default = "Info", HelpText = "The log level (optional). Default is Info.")]
+        [Option('l', "level", HelpText = "The log level (optional). Default is Info.")]
         public string Level { get; set; }
 
         [Option('n', "no-logo", Default = false, HelpText = "It hides the application logo.")]
