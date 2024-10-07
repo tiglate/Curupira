@@ -48,7 +48,7 @@ Curupira prioritizes security by limiting actions to those pre-defined in a conf
 
 Curupira is distributed under the GPL v3 license. Feel free to clone the repository or download a pre-compiled package. It's 100% free! 😊
 
-* **Clone the repository:** `git clone [repository URL]`
+* **Clone the repository:** `git clone https://github.com/tiglate/Curupira.git`
 
 **Contributions, bug reports, and feature requests are always welcome!** 🙌
 
