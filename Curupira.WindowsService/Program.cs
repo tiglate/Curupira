@@ -15,7 +15,7 @@ namespace Curupira.WindowsService
 
         public static void Main(string[] args)
         {
-            SetEnvironmentVariablesInDevMode();
+            SetEnvironmentVariablesInDevMode(args);
 
             if (Environment.UserInteractive)
             {
@@ -67,19 +67,26 @@ namespace Curupira.WindowsService
             }
         }
 
-        private static void SetEnvironmentVariablesInDevMode()
+        private static void SetEnvironmentVariablesInDevMode(string[] commandLineArgs)
         {
 #if DEBUG
-            var envFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
-
-            if (!File.Exists(envFile))
+            if (commandLineArgs.Length > 1 && commandLineArgs[0] == "--api-key")
             {
-                return;
+                Environment.SetEnvironmentVariable("API_KEY", commandLineArgs[1]);
             }
-
-            foreach (var pair in Infra.EnvFileParser.Parse(envFile))
+            else
             {
-                Environment.SetEnvironmentVariable(pair.Key, pair.Value);
+                var envFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
+
+                if (!File.Exists(envFile))
+                {
+                    return;
+                }
+
+                foreach (var pair in Infra.EnvFileParser.Parse(envFile))
+                {
+                    Environment.SetEnvironmentVariable(pair.Key, pair.Value);
+                }
             }
 #endif
         }
