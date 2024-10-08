@@ -15,7 +15,7 @@ namespace Curupira.Plugins.Installer
         private readonly long _maxAllowedUncompressedSize;
         private readonly long _thresholdEntries;
         private long _totalExtractedSize;
-        private const double compressionRatioThreshold = 10.0; // Compression ratio threshold to detect Zip Bombs
+        private const double _compressionRatioThreshold = 1024.0; // Compression ratio threshold to detect Zip Bombs
 
         public ZipComponentHandler(ILogProvider logger)
             : base(logger)
@@ -124,10 +124,10 @@ namespace Curupira.Plugins.Installer
             {
                 // Calculate compression ratio and detect Zip Bomb attempts
                 var compressionRatio = (double)entry.Length / entry.CompressedLength;
-                if (compressionRatio > compressionRatioThreshold)
+                if (compressionRatio > _compressionRatioThreshold)
                 {
                     Logger.Error($"File '{entry.FullName}' has a suspiciously high compression ratio ({compressionRatio}). Possible Zip Bomb attack.");
-                    throw new InvalidOperationException($"File '{entry.FullName}' exceeds allowed compression ratio of {compressionRatioThreshold}. Possible Zip Bomb detected.");
+                    throw new InvalidOperationException($"File '{entry.FullName}' exceeds allowed compression ratio of {_compressionRatioThreshold}. Possible Zip Bomb detected.");
                 }
 
                 // Update total extracted size

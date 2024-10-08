@@ -47,7 +47,7 @@ namespace Curupira.Plugins.Backup
                     }
 
                     // Enforce the backup limit asynchronously
-                    await Task.Run(() => EnforceBackupLimit(archive.Id)).ConfigureAwait(false);
+                    await Task.Run(() => EnforceBackupLimit(archive.Id, destination)).ConfigureAwait(false);
 
                     // Create the zip archive asynchronously
                     using (var zipArchive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
@@ -199,7 +199,7 @@ namespace Curupira.Plugins.Backup
             }
         }
 
-        private void EnforceBackupLimit(string backupId)
+        private void EnforceBackupLimit(string backupId, string folder)
         {
             Logger.TraceMethod(nameof(BackupPlugin), nameof(EnforceBackupLimit), nameof(backupId), backupId);
 
@@ -207,7 +207,7 @@ namespace Curupira.Plugins.Backup
             if (Config.Limit > 0)
             {
                 // Get all existing backups for the current backupId
-                string[] existingBackups = Directory.GetFiles(Config.Destination, $"*-{backupId}.zip");
+                string[] existingBackups = Directory.GetFiles(folder, $"*-{backupId}.zip");
 
                 // If there are more backups than (Limit - 1), delete the oldest files to respect the limit
                 int excessFileCount = existingBackups.Length - (Config.Limit - 1);
