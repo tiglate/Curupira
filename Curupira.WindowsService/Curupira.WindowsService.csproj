@@ -160,7 +160,7 @@
     <Compile Include="Controllers\FoldersCreatorController.cs" />
     <Compile Include="Controllers\InstallerController.cs" />
     <Compile Include="Controllers\ServiceManagerController.cs" />
-    <Compile Include="Controllers\ServicesController.cs" />
+    <Compile Include="Controllers\WindowsServicesController.cs" />
     <Compile Include="Controllers\SystemUsageController.cs" />
     <Compile Include="Controllers\TasksController.cs" />
     <Compile Include="Infra\EnvFileParser.cs" />

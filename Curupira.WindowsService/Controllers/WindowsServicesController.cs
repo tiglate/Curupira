@@ -8,11 +8,11 @@ namespace Curupira.WindowsService.Controllers
 {
     [ApiKeyAuthorize]
     [RoutePrefix("api/v1/services")]
-    public class ServicesController : ApiController
+    public class WindowsServicesController : ApiController
     {
         private readonly IWindowsServicesService _serviceService;
 
-        public ServicesController(IWindowsServicesService serviceService)
+        public WindowsServicesController(IWindowsServicesService serviceService)
         {
             _serviceService = serviceService;
         }
