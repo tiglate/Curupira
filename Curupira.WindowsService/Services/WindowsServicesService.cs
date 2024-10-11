@@ -7,7 +7,7 @@ using Curupira.WindowsService.Model; // For parallel processing
 
 namespace Curupira.WindowsService.Services
 {
-    public class ServiceService : IServiceService
+    public class WindowsServicesService : IWindowsServicesService
     {
         public IEnumerable<ServiceModel> GetAllServices()
         {

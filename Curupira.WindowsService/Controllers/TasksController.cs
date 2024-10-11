@@ -10,9 +10,9 @@ namespace Curupira.WindowsService.Controllers
     [RoutePrefix("api/v1/tasks")]
     public class TasksController : ApiController
     {
-        private readonly IMyTaskService _taskService;
+        private readonly IWindowsTasksService _taskService;
 
-        public TasksController(IMyTaskService taskService)
+        public TasksController(IWindowsTasksService taskService)
         {
             _taskService = taskService;
         }

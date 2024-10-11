@@ -1,7 +1,9 @@
-﻿using System.ServiceProcess;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.ServiceProcess;
 
 namespace Curupira.WindowsService.WindowsService
 {
+    [ExcludeFromCodeCoverage]
     public partial class ControlService : ServiceBase
     {
         public ControlService()

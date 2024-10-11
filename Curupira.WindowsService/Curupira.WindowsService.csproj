@@ -36,8 +36,8 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Autofac, Version=8.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\packages\Autofac.8.1.0\lib\netstandard2.0\Autofac.dll</HintPath>
+    <Reference Include="Autofac, Version=8.1.1.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autofac.8.1.1\lib\netstandard2.0\Autofac.dll</HintPath>
     </Reference>
     <Reference Include="Autofac.Integration.Owin, Version=7.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\packages\Autofac.Owin.7.1.0\lib\net472\Autofac.Integration.Owin.dll</HintPath>
@@ -166,6 +166,7 @@
     <Compile Include="Infra\EnvFileParser.cs" />
     <Compile Include="Infra\IoC\AutofacContainerBuilder.cs" />
     <Compile Include="Infra\IoC\LocalModule.cs" />
+    <Compile Include="Model\CustomEventLogEntry.cs" />
     <Compile Include="Model\DiskUsageModel.cs" />
     <Compile Include="Model\EventLogModel.cs" />
     <Compile Include="Model\ServiceModel.cs" />
@@ -179,13 +180,13 @@
     </Compile>
     <Compile Include="Services\EventLogService.cs" />
     <Compile Include="Services\IEventLogService.cs" />
-    <Compile Include="Services\IMyTaskService.cs" />
+    <Compile Include="Services\IWindowsTasksService.cs" />
     <Compile Include="Services\IPluginExecutorService.cs" />
-    <Compile Include="Services\IServiceService.cs" />
+    <Compile Include="Services\IWindowsServicesService.cs" />
     <Compile Include="Services\ISystemUsageService.cs" />
     <Compile Include="Services\PluginExecutorService.cs" />
-    <Compile Include="Services\ServiceService.cs" />
-    <Compile Include="Services\MyTaskService.cs" />
+    <Compile Include="Services\WindowsServicesService.cs" />
+    <Compile Include="Services\WindowsTasksService.cs" />
     <Compile Include="Services\SystemUsageService.cs" />
     <Compile Include="WindowsService\ControlService.cs">
       <SubType>Component</SubType>
@@ -198,6 +199,12 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
+    <Compile Include="Wrappers\EventLogWrapper.cs" />
+    <Compile Include="Wrappers\EventLogWrapperFactory.cs" />
+    <Compile Include="Wrappers\IEventLogWrapper.cs" />
+    <Compile Include="Wrappers\IEventLogWrapperFactory.cs" />
+    <Compile Include="Wrappers\ITaskServiceWrapper.cs" />
+    <Compile Include="Wrappers\TaskServiceWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

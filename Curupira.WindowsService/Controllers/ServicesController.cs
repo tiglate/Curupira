@@ -10,9 +10,9 @@ namespace Curupira.WindowsService.Controllers
     [RoutePrefix("api/v1/services")]
     public class ServicesController : ApiController
     {
-        private readonly IServiceService _serviceService;
+        private readonly IWindowsServicesService _serviceService;
 
-        public ServicesController(IServiceService serviceService)
+        public ServicesController(IWindowsServicesService serviceService)
         {
             _serviceService = serviceService;
         }

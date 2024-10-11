@@ -1,18 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Curupira.Plugins.Contract;
 using Curupira.WindowsService.Model;
+using Curupira.WindowsService.Wrappers;
 
 namespace Curupira.WindowsService.Services
 {
     public class EventLogService : IEventLogService
     {
         private readonly ILogProvider _logger;
+        private readonly IEventLogWrapperFactory _eventLogWrapperFactory;
 
-        public EventLogService(ILogProvider logger)
+        public EventLogService(ILogProvider logger, IEventLogWrapperFactory eventLogWrapperFactory)
         {
-            _logger = logger;    
+            _logger = logger;
+            _eventLogWrapperFactory = eventLogWrapperFactory;
         }
 
         public IEnumerable<EventLogModel> GetLatestApplicationLogs(int maxEntries = 100)
@@ -21,21 +23,19 @@ namespace Curupira.WindowsService.Services
 
             try
             {
-                // Open the "Application" log
-                using (var applicationLog = new EventLog("Application"))
+                using (var applicationLog = _eventLogWrapperFactory.Create("Application"))
                 {
-                    var totalEntries = applicationLog.Entries.Count;
+                    var totalEntries = applicationLog.GetEntryCount();
 
-                    // Start from the most recent entry and go backwards
                     for (var i = totalEntries - 1; i >= 0 && eventLogs.Count < maxEntries; i--)
                     {
-                        var entry = applicationLog.Entries[i];
+                        var entry = applicationLog.GetEntry(i);
 
                         var log = new EventLogModel
                         {
                             Source = entry.Source,
                             Message = entry.Message,
-                            EntryType = entry.EntryType.ToString(),
+                            EntryType = entry.EntryType,
                             TimeGenerated = entry.TimeGenerated
                         };
 

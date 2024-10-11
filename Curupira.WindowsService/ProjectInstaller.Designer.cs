@@ -1,5 +1,8 @@
-﻿namespace Curupira.WindowsService
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Curupira.WindowsService
 {
+    [ExcludeFromCodeCoverage]
     partial class ProjectInstaller
     {
         /// <summary>

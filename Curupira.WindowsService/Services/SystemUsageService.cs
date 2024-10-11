@@ -23,10 +23,9 @@ namespace Curupira.WindowsService.Services
             return usage;
         }
 
-        // Get current CPU usage percentage
         private static double GetCpuUsage()
         {
-            using (PerformanceCounter cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total"))
+            using (var cpuCounter = new PerformanceCounter("Processor", "% Processor Time", "_Total"))
             {
                 cpuCounter.NextValue(); // First call returns 0, so we need a second call after a brief delay
                 System.Threading.Thread.Sleep(500);
@@ -34,10 +33,9 @@ namespace Curupira.WindowsService.Services
             }
         }
 
-        // Get memory usage percentage
         private static double GetMemoryUsage()
         {
-            using (PerformanceCounter memCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use"))
+            using (var memCounter = new PerformanceCounter("Memory", "% Committed Bytes In Use"))
             {
                 return Math.Round(memCounter.NextValue(), 2);
             }
@@ -47,7 +45,7 @@ namespace Curupira.WindowsService.Services
         private static List<DiskUsageModel> GetDiskUsage()
         {
             var disks = new List<DiskUsageModel>();
-            foreach (DriveInfo drive in DriveInfo.GetDrives())
+            foreach (var drive in DriveInfo.GetDrives())
             {
                 if (drive.IsReady && drive.DriveType == DriveType.Fixed)
                 {
@@ -63,7 +61,6 @@ namespace Curupira.WindowsService.Services
             return disks;
         }
 
-        // Get the time when Windows started
         private static string GetWindowsStartTime()
         {
             try

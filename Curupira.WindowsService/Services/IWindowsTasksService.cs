@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 namespace Curupira.WindowsService.Services
 {
-    public interface IServiceService
+    public interface IWindowsTasksService
     {
-        IEnumerable<ServiceModel> GetAllServices();
+        IEnumerable<TaskModel> GetAllTasks();
     }
 }

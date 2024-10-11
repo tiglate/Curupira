@@ -9,5 +9,6 @@ namespace Curupira.WindowsService.Model
         public string Status { get; set; }
         public string LastRunTime { get; set; }
         public string NextRunTime { get; set; }
+        public bool Hidden { get; set; }
     }
 }
