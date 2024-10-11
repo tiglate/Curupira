@@ -78,7 +78,16 @@ function Test {
         exit 1
     }
 
-    $testDllPath = Join-Path (Get-ScriptDirectory) "Curupira.Tests\bin\Release\Curupira.Tests.dll"
+    $msbuildPath = Find-MSBuild
+    if (-not $msbuildPath) {
+        Write-Host "MSBuild not found. Exiting script."
+        exit 1
+    }
+
+    # Builds the solution
+    & "$msbuildPath" "Curupira.sln" /p:Configuration=Debug
+
+    $testDllPath = Join-Path (Get-ScriptDirectory) "Curupira.Tests\bin\Debug\Curupira.Tests.dll"
 
     # Ensure the test DLL exists
     if (-not (Test-Path $testDllPath)) {

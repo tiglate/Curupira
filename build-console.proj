@@ -6,9 +6,5 @@
   <Target Name="Build" DependsOnTargets="RestorePackages">
     <MSBuild Projects="Curupira.sln" Properties="Configuration=Release" />
   </Target>
-
-  <Target Name="RunTests" DependsOnTargets="BuildSolution">
-    <Exec Command="vstest.console.exe .\Curupira.Tests\bin\Release\Curupira.Tests.dll" />
-  </Target>
 </Project>
 
