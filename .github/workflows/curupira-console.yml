@@ -14,17 +14,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v2
-
-      - name: Restore NuGet packages
-        run: nuget restore Curupira.sln
-
-      - name: Build solution
-        run: msbuild Curupira.sln /p:Configuration=Release
-
-      - name: Setup VSTest Path
-        uses: darenm/Setup-VSTest@v1.2
-
-      - name: Run tests
-        run: vstest.console.exe Curupira.Tests/bin/Release/Curupira.Tests.dll
+      - name: Build & Run Tests
+        run: .\build-console.ps1 test
+        shell: pwsh

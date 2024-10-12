@@ -12,14 +12,23 @@ function Main {
         "package" {
             Package
         }
-        "clean" {
-            Clean
+        "build" {
+            Build
+        }
+        "compile" {
+            Build
         }
         "test" {
             Test
         }
+        "clean" {
+            Clean
+        }
+        "clear" {
+            Clean
+        }
         default {
-            Write-Host "Unknown target: $target. Valid targets are 'package', 'clean', and 'test'."
+            Write-Host "Unknown target: $target. Valid targets are 'package', 'build', 'test', 'clean', and 'clear'."
             exit 1
         }
     }
@@ -34,8 +43,8 @@ function Package {
         exit 1
     }
 
-    # Execute the msbuild command
-    Execute-MSBuild $msbuildPath
+    # Execute the msbuild command for Build-Release
+    Execute-MSBuild $msbuildPath "Build-Release"
 
     # Create the distribution folders
     $distPath = Join-Path (Get-ScriptDirectory) "dist"
@@ -45,64 +54,51 @@ function Package {
     Copy-FilesToDist $distPath
 }
 
-# Clean target: Delete the dist folder and debug/release binaries
-function Clean {
-	# Find the msbuild.exe path
+# Build target: Build the application in Debug mode
+function Build {
+    # Find the msbuild.exe path
     $msbuildPath = Find-MSBuild
     if (-not $msbuildPath) {
         Write-Host "MSBuild not found. Exiting script."
         exit 1
     }
 
-	# Clean the solution build output
-    & "$msbuildPath" "Curupira.sln" /t:Clean /p:Configuration=Debug
-	& "$msbuildPath" "Curupira.sln" /t:Clean /p:Configuration=Release
+    # Execute the msbuild command for Build-Debug
+    Execute-MSBuild $msbuildPath "Build-Debug"
+}
+
+# Test target: Run unit tests using vstest.console.exe
+function Test {
+    # Find the msbuild.exe path
+    $msbuildPath = Find-MSBuild
+    if (-not $msbuildPath) {
+        Write-Host "MSBuild not found. Exiting script."
+        exit 1
+    }
+
+    # Execute the msbuild command for Run-Tests
+    Execute-MSBuild $msbuildPath "Run-Tests"
+}
+
+# Clean target: Delete the dist folder and debug/release binaries
+function Clean {
+    # Find the msbuild.exe path
+    $msbuildPath = Find-MSBuild
+    if (-not $msbuildPath) {
+        Write-Host "MSBuild not found. Exiting script."
+        exit 1
+    }
+
+    # Execute the msbuild command for Clean
+    Execute-MSBuild $msbuildPath "Clean"
 
     $distPath = Join-Path (Get-ScriptDirectory) "dist"
-    
 
     # Remove dist folder
     if (Test-Path $distPath) {
         Remove-Item -Recurse -Force $distPath
         Write-Host "Deleted dist folder."
     }
-
-}
-
-# Test target: Run unit tests using vstest.console.exe
-function Test {
-    # Find vstest.console.exe
-    $vstestPath = Find-VSTest
-    if (-not $vstestPath) {
-        Write-Host "vstest.console.exe not found. Exiting script."
-        exit 1
-    }
-
-    $msbuildPath = Find-MSBuild
-    if (-not $msbuildPath) {
-        Write-Host "MSBuild not found. Exiting script."
-        exit 1
-    }
-
-    # Builds the solution
-    & "$msbuildPath" "Curupira.sln" /p:Configuration=Debug
-
-    $testDllPath = Join-Path (Get-ScriptDirectory) "Curupira.Tests\bin\Debug\Curupira.Tests.dll"
-
-    # Ensure the test DLL exists
-    if (-not (Test-Path $testDllPath)) {
-        Write-Host "Test DLL not found at: $testDllPath"
-        exit 1
-    }
-
-    # Execute vstest.console.exe
-    & "$vstestPath" $testDllPath
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "Test execution failed."
-        exit $LASTEXITCODE
-    }
-
-    Write-Host "Tests executed successfully."
 }
 
 # Find the location of msbuild.exe using vswhere
@@ -123,41 +119,20 @@ function Find-MSBuild {
     return $msbuildPath
 }
 
-# Find the location of vstest.console.exe using vswhere
-function Find-VSTest {
-    $vswherePath = "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe"
-    if (-not (Test-Path $vswherePath)) {
-        Write-Host "vswhere.exe not found."
-        return $null
-    }
-
-    $vstestPaths = & "$vswherePath" -latest -products * -requires Microsoft.VisualStudio.PackageGroup.TestTools.Core -find **\vstest.console.exe
-
-    if (-not $vstestPaths) {
-        Write-Host "vstest.console.exe not found."
-        return $null
-    }
-
-    # Take the first result if multiple entries are returned
-    $vstestPath = $vstestPaths[0]
-
-    Write-Host "vstest.console.exe found at: $vstestPath"
-    return $vstestPath
-}
-
-# Execute msbuild with the provided build.proj
+# Execute msbuild with the provided target
 function Execute-MSBuild {
     param (
-        [string]$msbuildPath
+        [string]$msbuildPath,
+        [string]$target
     )
 
     $buildProjPath = Join-Path (Get-ScriptDirectory) "build-console.proj"
     if (-not (Test-Path $buildProjPath)) {
-        Write-Host "build.proj not found."
+        Write-Host "build-console.proj not found."
         exit 1
     }
 
-    & "$msbuildPath" $buildProjPath
+    & "$msbuildPath" $buildProjPath /t:$target
     if ($LASTEXITCODE -ne 0) {
         Write-Host "MSBuild execution failed."
         exit $LASTEXITCODE
