@@ -20,13 +20,6 @@ function Main {
         Write-Host "vstest.console.exe not found. Exiting script."
         exit 1
     }
-    
-    # Ensure dotCover is installed
-    $dotCoverPath = Ensure-DotCoverInstalled
-    if (-not $dotCoverPath) {
-        Write-Host "dotCover installation failed. Exiting script."
-        exit 1
-    }
 
     # List the DLLs to be tested
     $dllsToTest = @(
@@ -57,13 +50,13 @@ function Main {
     $solutionPath = Join-Path $PSScriptRoot "..\"
 
     # Run dotCover with the selected format
-    & $dotCoverPath cover --TargetExecutable $vsTestConsolePath `
-                          --TargetArguments "$dlls" `
-                          --Output $outputFile `
-                          --ReportType $reportType `
-                          --TargetWorkingDir $solutionPath `
-                          --filters="+:module=Curupira*" `
-						  --attributeFilters=System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute
+    dotnet dotcover $dotCoverPath cover --TargetExecutable $vsTestConsolePath `
+                                        --TargetArguments "$dlls" `
+                                        --Output $outputFile `
+                                        --ReportType $reportType `
+                                        --TargetWorkingDir $solutionPath `
+                                        --filters="+:module=Curupira*" `
+						                --attributeFilters=System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute
 }
 
 function Ensure-DotCoverInstalled {
