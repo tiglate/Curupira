@@ -154,6 +154,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppRunner.cs" />
     <Compile Include="Attributes\ApiKeyAuthorizeAttribute.cs" />
     <Compile Include="Controllers\BackupController.cs" />
     <Compile Include="Controllers\EventLogsController.cs" />

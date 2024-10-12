@@ -163,6 +163,7 @@ function Copy-FilesToDist {
     )
 
     $releasePath = Join-Path (Get-ScriptDirectory) "Curupira.AppClient\bin\Release"
+    $solutionPath = Get-ScriptDirectory
 
     # Copy .dll files to dist\lib
     Copy-Item -Path "$releasePath\*.dll" -Destination (Join-Path $distPath "lib") -Force
@@ -178,6 +179,9 @@ function Copy-FilesToDist {
 
     # Copy Config\*.* to dist\conf
     Copy-Item -Path (Join-Path $releasePath "Config\*.*") -Destination (Join-Path $distPath "conf") -Force
+
+    # Copy LICENSE.txt to dist
+    Copy-Item -Path (Join-Path $solutionPath "LICENSE.txt") -Destination $distPath -Force
 
     Write-Host "Files copied to distribution folder."
 }

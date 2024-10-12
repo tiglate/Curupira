@@ -181,6 +181,7 @@
     <Compile Include="Plugins\ServiceManager\ServiceManagerPluginConfigParserTests.cs" />
     <Compile Include="Plugins\ServiceManager\ServiceManagerPluginTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WindowsService\AppRunnerTests.cs" />
     <Compile Include="WindowsService\Controllers\BackupControllerTests.cs" />
     <Compile Include="WindowsService\Controllers\EventLogsControllerTests.cs" />
     <Compile Include="WindowsService\Controllers\FoldersCreatorControllerTests.cs" />
@@ -190,6 +191,7 @@
     <Compile Include="WindowsService\Controllers\SystemUsageControllerTests.cs" />
     <Compile Include="WindowsService\Controllers\TasksControllerTests.cs" />
     <Compile Include="WindowsService\Controllers\WindowsServicesControllerTests.cs" />
+    <Compile Include="WindowsService\Infra\EnvFileParserTests.cs" />
     <Compile Include="WindowsService\Services\EventLogServiceTests.cs" />
     <Compile Include="WindowsService\StartupIntegrationTests.cs" />
     <Compile Include="WindowsService\Services\SystemUsageServiceTests.cs" />

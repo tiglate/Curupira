@@ -1,21 +1,19 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.ServiceProcess;
 using Curupira.WindowsService.WindowsService;
-using Microsoft.Owin.Hosting;
 using NLog;
-using System.Configuration;
-using System.IO;
 
 namespace Curupira.WindowsService
 {
+    [ExcludeFromCodeCoverage]
     static class Program
     {
-        static readonly Logger logger = LogManager.GetCurrentClassLogger();
-        private static IDisposable _webApp;
+        static readonly Logger _logger = LogManager.GetCurrentClassLogger();
 
         public static void Main(string[] args)
         {
-            SetEnvironmentVariablesInDevMode(args);
+            AppRunner.SetEnvironmentVariablesInDevMode(args);
 
             if (Environment.UserInteractive)
             {
@@ -29,66 +27,22 @@ namespace Curupira.WindowsService
             }
         }
 
-        // Start the app in console mode
         private static void StartAsConsoleApp()
         {
             try
             {
-                StartServer();
-                Console.WriteLine("Press [Enter] to stop the server...");
-                Console.ReadLine();
-                StopServer();
+                using (var runner = new AppRunner(_logger))
+                {
+                    runner.StartServer();
+                    Console.WriteLine("Press [Enter] to stop the server...");
+                    Console.ReadLine();
+                    runner.StopServer();
+                }
             }
             catch (Exception ex)
             {
-                logger.Error(ex, "An error occurred while running the server in console mode.");
+                _logger.Error(ex, "An error occurred while running the server in console mode.");
             }
-        }
-
-        // Start the OWIN Web Server
-        public static void StartServer()
-        {
-            string baseAddress = ConfigurationManager.AppSettings["BaseAddress"];
-            logger.Info($"Starting OWIN server at {baseAddress}");
-
-            // Start OWIN server
-            _webApp = WebApp.Start<Startup>(baseAddress);
-            logger.Info("OWIN server started.");
-        }
-
-        // Stop the OWIN Web Server gracefully
-        public static void StopServer()
-        {
-            if (_webApp != null)
-            {
-                logger.Info("Stopping OWIN server...");
-                _webApp.Dispose();
-                logger.Info("OWIN server stopped gracefully.");
-            }
-        }
-
-        private static void SetEnvironmentVariablesInDevMode(string[] commandLineArgs)
-        {
-#if DEBUG
-            if (commandLineArgs.Length > 1 && commandLineArgs[0] == "--api-key")
-            {
-                Environment.SetEnvironmentVariable("API_KEY", commandLineArgs[1]);
-            }
-            else
-            {
-                var envFile = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
-
-                if (!File.Exists(envFile))
-                {
-                    return;
-                }
-
-                foreach (var pair in Infra.EnvFileParser.Parse(envFile))
-                {
-                    Environment.SetEnvironmentVariable(pair.Key, pair.Value);
-                }
-            }
-#endif
         }
     }
 }
