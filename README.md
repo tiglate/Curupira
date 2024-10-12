@@ -4,6 +4,8 @@
 &nbsp;
 [![CI Build](https://github.com/tiglate/Curupira/actions/workflows/curupira-console.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/curupira-console.yml)
 &nbsp;
+[![CI Build](https://github.com/tiglate/Curupira/actions/workflows/curupira-service.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/curupira-service.yml)
+&nbsp;
 [![CodeQL Scan](https://github.com/tiglate/Curupira/actions/workflows/codeql.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/codeql.yml)
 
 👋 Hey there, fellow IT wizards! ✨
