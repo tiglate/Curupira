@@ -46,6 +46,12 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _serviceManagerPluginMock.Object.Init();
         }
 
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _serviceManagerPluginMock?.Object.Dispose();
+        }
+
         [TestMethod]
         public async Task Execute_ShouldLogError_WhenBundleIsMissing()
         {

@@ -1,4 +1,5 @@
 ﻿using Curupira.WindowsService;
+using Curupira.WindowsService.Controllers;
 using Microsoft.Owin.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
@@ -59,6 +60,26 @@ namespace Curupira.Tests.WindowsService
                 // Act & Assert
                 Assert.ThrowsException<InvalidOperationException>(() => server.HttpClient.GetAsync("/api/health").RunSynchronously());
             }
+        }
+
+        [TestMethod]
+        public async Task Get_ThrowsUnhandledException_GlobalExceptionFilterHandlesIt()
+        {
+            // Arrange
+            HealthController.ShouldThrowException = true;
+            var requestUri = "/api/health"; // Reusing the existing health endpoint
+
+            // Act
+            var response = await _client.GetAsync(requestUri).ConfigureAwait(false);
+
+            // Assert
+            Assert.AreEqual(System.Net.HttpStatusCode.InternalServerError, response.StatusCode);
+            
+            var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
+            Assert.IsTrue(content.Contains("An error occurred. Please try again later."));
+
+            // Cleanup
+            HealthController.ShouldThrowException = false;
         }
     }
 }

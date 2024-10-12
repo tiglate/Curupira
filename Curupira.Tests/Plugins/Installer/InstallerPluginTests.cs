@@ -40,6 +40,12 @@ namespace Curupira.Tests.Plugins.ServiceManager
             _plugin.Init();
         }
 
+        [TestCleanup]
+        public void Cleanup()
+        {
+            _plugin?.Dispose();
+        }
+
         [TestMethod]
         public async Task ExecuteAsync_ShouldExtractZipComponentSuccessfully_RealFileSystem()
         {
