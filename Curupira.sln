@@ -21,12 +21,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.WindowsService", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.IoC", "Curupira.Plugins.IoC\Curupira.Plugins.IoC.csproj", "{B041B98E-2C44-41D0-95D0-985C8DF865AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Tests", "Curupira.Tests\Curupira.Tests.csproj", "{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E481BAE5-BF18-4DFD-A964-42BCE93D7F69}"
 	ProjectSection(SolutionItems) = preProject
+		build-common.ps1 = build-common.ps1
 		build-console.proj = build-console.proj
 		build-console.ps1 = build-console.ps1
+		build-service.proj = build-service.proj
+		build-service.ps1 = build-service.ps1
 		LICENSE.txt = LICENSE.txt
 		README.md = README.md
 		vstest.console.bat = vstest.console.bat
@@ -38,6 +39,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\codeql.yml = .github\workflows\codeql.yml
 		.github\workflows\curupira-console.yml = .github\workflows\curupira-console.yml
+		.github\workflows\curupira-service.yml = .github\workflows\curupira-service.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{41C99531-82DF-47BA-B1CC-191C1720A7BA}"
@@ -45,6 +47,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEM
 		.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
 		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.AppClient.Tests", "Curupira.AppClient.Tests\Curupira.AppClient.Tests.csproj", "{B63AD9FD-FDDE-4A83-B8F8-A71119E4A30B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.Plugins.Tests", "Curupira.Plugins.Tests\Curupira.Plugins.Tests.csproj", "{CD36B827-5C6D-48D3-874A-BAA712B2118E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Curupira.WindowsService.Tests", "Curupira.WindowsService.Tests\Curupira.WindowsService.Tests.csproj", "{0432F00E-30FB-49A2-8288-47B2B3554DBF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2 - Console", "2 - Console", "{C894F507-26DD-473B-BA97-0EA7074D418A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1 - Plugins", "1 - Plugins", "{378EE8DA-08F4-4156-A7B8-FF49096315F1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3 - REST API", "3 - REST API", "{371F3D84-17C5-4C41-B87D-E3E2CA6DD470}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,17 +102,37 @@ Global
 		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B041B98E-2C44-41D0-95D0-985C8DF865AB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{410BF7CE-EFF6-47C8-9717-AADE5189C3E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B63AD9FD-FDDE-4A83-B8F8-A71119E4A30B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B63AD9FD-FDDE-4A83-B8F8-A71119E4A30B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B63AD9FD-FDDE-4A83-B8F8-A71119E4A30B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B63AD9FD-FDDE-4A83-B8F8-A71119E4A30B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CD36B827-5C6D-48D3-874A-BAA712B2118E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CD36B827-5C6D-48D3-874A-BAA712B2118E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CD36B827-5C6D-48D3-874A-BAA712B2118E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CD36B827-5C6D-48D3-874A-BAA712B2118E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0432F00E-30FB-49A2-8288-47B2B3554DBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0432F00E-30FB-49A2-8288-47B2B3554DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0432F00E-30FB-49A2-8288-47B2B3554DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0432F00E-30FB-49A2-8288-47B2B3554DBF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{01FEC164-EA0B-4947-BE52-D4AB9EC414E8} = {C894F507-26DD-473B-BA97-0EA7074D418A}
+		{ABFD97F5-058C-4516-9EA0-5C40F3CBFE83} = {378EE8DA-08F4-4156-A7B8-FF49096315F1}
+		{424F6D8E-7EEC-46BE-80D6-E637F56FA424} = {378EE8DA-08F4-4156-A7B8-FF49096315F1}
+		{085D9F87-CB58-4534-A247-D54C9A6E03B0} = {378EE8DA-08F4-4156-A7B8-FF49096315F1}
+		{D46FC68F-4501-45D4-BBE5-56E44FD6FECB} = {378EE8DA-08F4-4156-A7B8-FF49096315F1}
+		{B6793103-4F09-47BF-AB2B-DF02A8DA8CA5} = {378EE8DA-08F4-4156-A7B8-FF49096315F1}
+		{5AD1561A-8D9F-4087-BD72-7E33F0E68F54} = {378EE8DA-08F4-4156-A7B8-FF49096315F1}
+		{8A70E6B0-F650-407C-A828-1AF31C95D8CB} = {371F3D84-17C5-4C41-B87D-E3E2CA6DD470}
+		{B041B98E-2C44-41D0-95D0-985C8DF865AB} = {378EE8DA-08F4-4156-A7B8-FF49096315F1}
 		{CB159252-0C48-4061-A514-801967243A63} = {5F34DCA5-FF83-4BE4-A4AF-E5D98494B3CB}
 		{41C99531-82DF-47BA-B1CC-191C1720A7BA} = {5F34DCA5-FF83-4BE4-A4AF-E5D98494B3CB}
+		{B63AD9FD-FDDE-4A83-B8F8-A71119E4A30B} = {C894F507-26DD-473B-BA97-0EA7074D418A}
+		{CD36B827-5C6D-48D3-874A-BAA712B2118E} = {378EE8DA-08F4-4156-A7B8-FF49096315F1}
+		{0432F00E-30FB-49A2-8288-47B2B3554DBF} = {371F3D84-17C5-4C41-B87D-E3E2CA6DD470}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ECCDF13C-B254-48FD-AA24-37865442E510}

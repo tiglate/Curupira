@@ -1,4 +1,4 @@
-<Project DefaultTargets="Build-Release" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build-Release" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <Target Name="RestorePackages">
         <Exec Command="nuget restore Curupira.sln" />
     </Target>
@@ -13,7 +13,7 @@
 
     <Target Name="Run-Tests" DependsOnTargets="Build-Debug">
         <Exec Command="vstest.console.bat Curupira.WindowsService.Tests\bin\Debug\Curupira.WindowsService.Tests.dll" />
-        <Exec Command="vstest.console.bat Curupira.AppClient.Tests\bin\Debug\Curupira.AppClient.Tests.dll" />
+        <Exec Command="vstest.console.bat Curupira.Plugins.Tests\bin\Debug\Curupira.Plugins.Tests.dll" />
     </Target>
 
     <Target Name="Clean">
