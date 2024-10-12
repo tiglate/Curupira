@@ -370,3 +370,7 @@ FodyWeavers.xsd
 
 # Software distribution folder
 dist/
+
+code-coverage/dotCover.Output/
+code-coverage/*.xml
+code-coverage/*.html

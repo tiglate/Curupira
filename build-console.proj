@@ -12,7 +12,7 @@
     </Target>
 
     <Target Name="Run-Tests" DependsOnTargets="Build-Debug">
-        <Exec Command="vstest.console.bat Curupira.WindowsService.Tests\bin\Debug\Curupira.WindowsService.Tests.dll" />
+        <Exec Command="vstest.console.bat Curupira.Plugins.Tests\bin\Debug\Curupira.Plugins.Tests.dll" />
         <Exec Command="vstest.console.bat Curupira.AppClient.Tests\bin\Debug\Curupira.AppClient.Tests.dll" />
     </Target>
 
