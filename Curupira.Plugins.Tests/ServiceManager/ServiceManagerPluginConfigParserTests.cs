@@ -51,7 +51,7 @@ namespace Curupira.Plugins.Tests.ServiceManager
                 </bundles>
             </plugin>";
 
-        private string CreateTemporaryFileWithContent(string content)
+        private static string CreateTemporaryFileWithContent(string content)
         {
             var tempFile = Path.GetTempFileName();
             File.WriteAllText(tempFile, content);

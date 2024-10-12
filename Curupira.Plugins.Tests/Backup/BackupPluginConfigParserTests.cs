@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using Curupira.Plugins.Backup;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -67,7 +68,6 @@ namespace Curupira.Plugins.Tests.Backup
         }
 
         [TestMethod]
-        [ExpectedException(typeof(DirectoryNotFoundException))]
         public void Execute_ShouldThrowDirectoryNotFoundException_WhenInvalidDestinationProvided()
         {
             var invalidDestinationXml = $@"<?xml version='1.0' encoding='UTF-8' ?>
@@ -85,11 +85,11 @@ namespace Curupira.Plugins.Tests.Backup
             File.WriteAllText(_tempConfigFilePath, invalidDestinationXml);
 
             var parser = new BackupPluginConfigParser(_tempConfigFilePath);
-            parser.Execute();
+
+            Assert.ThrowsException<DirectoryNotFoundException>(() => parser.Execute());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowInvalidOperationException_WhenMissingRootInBackupNode()
         {
             var missingRootXml = $@"<?xml version='1.0' encoding='UTF-8' ?>
@@ -107,11 +107,11 @@ namespace Curupira.Plugins.Tests.Backup
             File.WriteAllText(_tempConfigFilePath, missingRootXml);
 
             var parser = new BackupPluginConfigParser(_tempConfigFilePath);
-            parser.Execute();
+
+            Assert.ThrowsException<InvalidOperationException>(() => parser.Execute());
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
         public void Execute_ShouldThrowArgumentNullException_WhenNullXmlElementIsPassed()
         {
             var parser = new BackupPluginConfigParser(_tempConfigFilePath);
@@ -121,14 +121,16 @@ namespace Curupira.Plugins.Tests.Backup
             try
             {
                 method.Invoke(parser, new object[] { null });
+                Assert.Fail("Expected ArgumentNullException was not thrown.");
             }
-            catch (Exception ex)
+            catch (TargetInvocationException ex)
             {
-                if (ex.InnerException != null)
+                if (ex.InnerException is ArgumentNullException)
                 {
-                    throw ex.InnerException;
+                    // Expected exception was thrown
+                    return;
                 }
-                throw ex;
+                throw;
             }
         }
 
@@ -198,7 +200,6 @@ namespace Curupira.Plugins.Tests.Backup
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowInvalidOperationException_WhenLimitIsNegative()
         {
             var xmlWithNegativeLimit = $@"<?xml version='1.0' encoding='UTF-8' ?>
@@ -216,7 +217,7 @@ namespace Curupira.Plugins.Tests.Backup
             File.WriteAllText(_tempConfigFilePath, xmlWithNegativeLimit);
 
             var parser = new BackupPluginConfigParser(_tempConfigFilePath);
-            parser.Execute();
+            Assert.ThrowsException<InvalidOperationException>(() => parser.Execute());
         }
 
         [TestMethod]
@@ -260,7 +261,6 @@ namespace Curupira.Plugins.Tests.Backup
         }
 
         [TestMethod]
-        [ExpectedException(typeof(InvalidOperationException))]
         public void Execute_ShouldThrowInvalidOperationException_WhenDestinationMissingInSettingsAndBackup()
         {
             var xmlWithNoDestination = $@"<?xml version='1.0' encoding='UTF-8' ?>
@@ -278,7 +278,7 @@ namespace Curupira.Plugins.Tests.Backup
             File.WriteAllText(_tempConfigFilePath, xmlWithNoDestination);
 
             var parser = new BackupPluginConfigParser(_tempConfigFilePath);
-            parser.Execute();
+            Assert.ThrowsException<InvalidOperationException>(() => parser.Execute());
         }
     }
 }

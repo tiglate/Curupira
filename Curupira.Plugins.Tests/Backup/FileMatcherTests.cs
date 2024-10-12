@@ -9,23 +9,23 @@ namespace Curupira.Plugins.Tests.Backup
     [TestClass]
     public class FileMatcherTests
     {
-        private static string _testRootDir = @"C:\Temp\FileMatcherTests";
+        private const string TestRootDir = @"C:\Temp\FileMatcherTests";
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext context)
         {
-            Directory.CreateDirectory(_testRootDir);
-            Directory.CreateDirectory(Path.Combine(_testRootDir, "subfolder"));
-            File.WriteAllText(Path.Combine(_testRootDir, "file.txt"), "Some text content");
-            File.WriteAllText(Path.Combine(_testRootDir, "subfolder", "anotherfile.txt"), "More text content");
+            Directory.CreateDirectory(TestRootDir);
+            Directory.CreateDirectory(Path.Combine(TestRootDir, "subfolder"));
+            File.WriteAllText(Path.Combine(TestRootDir, "file.txt"), "Some text content");
+            File.WriteAllText(Path.Combine(TestRootDir, "subfolder", "anotherfile.txt"), "More text content");
         }
 
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            if (Directory.Exists(_testRootDir))
+            if (Directory.Exists(TestRootDir))
             {
-                Directory.Delete(_testRootDir, true);
+                Directory.Delete(TestRootDir, true);
             }
         }
 
@@ -61,7 +61,7 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_EmptyPath_ReturnsFalse()
         {
             var patterns = new List<string> { "file.txt" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
             Assert.IsFalse(matcher.IsMatch(null));
             Assert.IsFalse(matcher.IsMatch(string.Empty));
@@ -72,9 +72,9 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_ExactMatch_ReturnsTrue()
         {
             var patterns = new List<string> { "file.txt" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
-            bool result = matcher.IsMatch(Path.Combine(_testRootDir, "file.txt"));
+            bool result = matcher.IsMatch(Path.Combine(TestRootDir, "file.txt"));
 
             Assert.IsTrue(result);
         }
@@ -83,9 +83,9 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_WildcardMatch_ReturnsTrue()
         {
             var patterns = new List<string> { "*.txt" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
-            bool result = matcher.IsMatch(Path.Combine(_testRootDir, "subfolder", "anotherfile.txt"));
+            bool result = matcher.IsMatch(Path.Combine(TestRootDir, "subfolder", "anotherfile.txt"));
 
             Assert.IsTrue(result);
         }
@@ -94,9 +94,9 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_NoMatch_ReturnsFalse()
         {
             var patterns = new List<string> { "*.txt" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
-            bool result = matcher.IsMatch(Path.Combine(_testRootDir, "subfolder", "image.jpg"));
+            bool result = matcher.IsMatch(Path.Combine(TestRootDir, "subfolder", "image.jpg"));
 
             Assert.IsFalse(result);
         }
@@ -105,10 +105,10 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_OutsideRoot_ReturnsFalse()
         {
             var patterns = new List<string> { "*.txt" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
             // Create a directory outside the test root
-            string outsideDir = Path.Combine(Path.GetDirectoryName(_testRootDir), "OtherFolder");
+            string outsideDir = Path.Combine(Path.GetDirectoryName(TestRootDir), "OtherFolder");
             Directory.CreateDirectory(outsideDir);
             string outsideFilePath = Path.Combine(outsideDir, "file.txt");
             File.WriteAllText(outsideFilePath, "Some text content");
@@ -126,14 +126,14 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_MultiplePatterns_ReturnsTrueIfAnyMatch()
         {
             var patterns = new List<string> { "*.txt", "specific_folder/*" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
             // Create the "specific_folder" and a file within it
-            string specificFolderPath = Path.Combine(_testRootDir, "specific_folder");
+            string specificFolderPath = Path.Combine(TestRootDir, "specific_folder");
             Directory.CreateDirectory(specificFolderPath);
             File.WriteAllText(Path.Combine(specificFolderPath, "anyfile.exe"), "Some content");
 
-            bool result1 = matcher.IsMatch(Path.Combine(_testRootDir, "subfolder", "anotherfile.txt"));
+            bool result1 = matcher.IsMatch(Path.Combine(TestRootDir, "subfolder", "anotherfile.txt"));
             bool result2 = matcher.IsMatch(Path.Combine(specificFolderPath, "anyfile.exe"));
 
             Assert.IsTrue(result1);
@@ -148,9 +148,9 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_CaseInsensitive_ReturnsTrue()
         {
             var patterns = new List<string> { "FILE.TXT" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
-            bool result = matcher.IsMatch(Path.Combine(_testRootDir, "file.txt"));
+            bool result = matcher.IsMatch(Path.Combine(TestRootDir, "file.txt"));
 
             Assert.IsTrue(result);
         }
@@ -159,10 +159,10 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_WildcardInMiddle_ReturnsTrue()
         {
             var patterns = new List<string> { "folderA/*/file.txt" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
             // Create the necessary directory structure and file
-            string folderAPath = Path.Combine(_testRootDir, "folderA");
+            string folderAPath = Path.Combine(TestRootDir, "folderA");
             string subfolderPath = Path.Combine(folderAPath, "subfolder");
             Directory.CreateDirectory(subfolderPath);
             File.WriteAllText(Path.Combine(subfolderPath, "file.txt"), "Some content");
@@ -181,10 +181,10 @@ namespace Curupira.Plugins.Tests.Backup
         public void IsMatch_MultipleWildcards_ReturnsTrue()
         {
             var patterns = new List<string> { "**/*.txt" };
-            var matcher = new FileMatcher(_testRootDir, patterns);
+            var matcher = new FileMatcher(TestRootDir, patterns);
 
             // Create the necessary directory structure and file
-            string folderAPath = Path.Combine(_testRootDir, "folderA");
+            string folderAPath = Path.Combine(TestRootDir, "folderA");
             string subfolderPath = Path.Combine(folderAPath, "subfolder");
             string deeperPath = Path.Combine(subfolderPath, "deeper");
             Directory.CreateDirectory(deeperPath);
