@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using Curupira.WindowsService;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NLog;

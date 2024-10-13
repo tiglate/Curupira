@@ -154,6 +154,7 @@
     <Compile Include="AppRunnerTests.cs" />
     <Compile Include="Controllers\BackupControllerTests.cs" />
     <Compile Include="Controllers\EventLogsControllerTests.cs" />
+    <Compile Include="Controllers\FileUploadControllerTests.cs" />
     <Compile Include="Controllers\FoldersCreatorControllerTests.cs" />
     <Compile Include="Controllers\HealthControllerTests.cs" />
     <Compile Include="Controllers\InstallerControllerTests.cs" />
@@ -164,6 +165,7 @@
     <Compile Include="Infra\EnvFileParserTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\EventLogServiceTests.cs" />
+    <Compile Include="Services\FileUploadServiceTests.cs" />
     <Compile Include="Services\PluginExecutorServiceTests.cs" />
     <Compile Include="Services\SystemUsageServiceTests.cs" />
     <Compile Include="Services\WindowsServicesServiceTests.cs" />

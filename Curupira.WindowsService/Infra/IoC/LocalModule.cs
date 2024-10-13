@@ -35,6 +35,10 @@ namespace Curupira.WindowsService.Infra.IoC
 
             builder.RegisterType<SystemUsageService>()
                 .As<ISystemUsageService>();
+
+            builder
+                .RegisterType<FileUploadService>()
+                .As<IFileUploadService>();
         }
 
         private static void RegisterWrappers(ContainerBuilder builder)

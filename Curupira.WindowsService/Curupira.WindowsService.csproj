@@ -158,6 +158,7 @@
     <Compile Include="Attributes\ApiKeyAuthorizeAttribute.cs" />
     <Compile Include="Controllers\BackupController.cs" />
     <Compile Include="Controllers\EventLogsController.cs" />
+    <Compile Include="Controllers\FileUploadController.cs" />
     <Compile Include="Controllers\FoldersCreatorController.cs" />
     <Compile Include="Controllers\InstallerController.cs" />
     <Compile Include="Controllers\ServiceManagerController.cs" />
@@ -180,7 +181,9 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Services\EventLogService.cs" />
+    <Compile Include="Services\FileUploadService.cs" />
     <Compile Include="Services\IEventLogService.cs" />
+    <Compile Include="Services\IFileUploadService.cs" />
     <Compile Include="Services\IWindowsTasksService.cs" />
     <Compile Include="Services\IPluginExecutorService.cs" />
     <Compile Include="Services\IWindowsServicesService.cs" />

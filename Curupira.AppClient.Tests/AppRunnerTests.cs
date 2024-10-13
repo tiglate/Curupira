@@ -1,5 +1,4 @@
 ﻿using Autofac;
-using Curupira.AppClient;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using CommandLine;
