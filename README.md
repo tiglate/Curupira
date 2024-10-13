@@ -2,10 +2,6 @@
 
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=tiglate_Curupira&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=tiglate_Curupira)
 &nbsp;
-[![CI Build](https://github.com/tiglate/Curupira/actions/workflows/curupira-console.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/curupira-console.yml)
-&nbsp;
-[![CI Build](https://github.com/tiglate/Curupira/actions/workflows/curupira-service.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/curupira-service.yml)
-&nbsp;
 [![CodeQL Scan](https://github.com/tiglate/Curupira/actions/workflows/codeql.yml/badge.svg)](https://github.com/tiglate/Curupira/actions/workflows/codeql.yml)
 
 👋 Hey there, fellow IT wizards! ✨
