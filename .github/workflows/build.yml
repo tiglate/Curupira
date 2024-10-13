@@ -57,4 +57,5 @@ jobs:
           msbuild Curupira.sln -property:Configuration=Release -property:Platform="Any CPU" /t:Rebuild
           cd code-coverage
           .\run-dotCover.ps1 HTML Release
+          cd ..
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
