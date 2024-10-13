@@ -13,7 +13,7 @@ namespace Curupira.WindowsService
 
         public static void Main(string[] args)
         {
-            AppRunner.SetEnvironmentVariablesInDevMode(args);
+            AppRunner.SetEnvironmentVariables(args);
 
             if (Environment.UserInteractive)
             {

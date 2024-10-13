@@ -50,27 +50,27 @@ namespace Curupira.WindowsService.Tests
         }
 
         [TestMethod]
-        public void SetEnvironmentVariablesInDevMode_ShouldSetVariables()
+        public void SetEnvironmentVariables_ShouldSetVariables()
         {
             // Arrange
             string[] args = { "--api-key", "test-key" };
 
             // Act
-            AppRunner.SetEnvironmentVariablesInDevMode(args);
+            AppRunner.SetEnvironmentVariables(args);
 
             // Assert
             Assert.AreEqual("test-key", Environment.GetEnvironmentVariable("API_KEY"));
         }
 
         [TestMethod]
-        public void SetEnvironmentVariablesInDevMode_ShouldUseEnvFile()
+        public void SetEnvironmentVariables_ShouldUseEnvFile()
         {
             // Arrange
             var envContent = "API_KEY=env-file-key";
             WriteTempEnvFile(envContent);
 
             // Act
-            AppRunner.SetEnvironmentVariablesInDevMode(new string[0]);
+            AppRunner.SetEnvironmentVariables(new string[0]);
 
             // Assert
             Assert.AreEqual("env-file-key", Environment.GetEnvironmentVariable("API_KEY"));
@@ -79,13 +79,13 @@ namespace Curupira.WindowsService.Tests
             DeleteTempEnvFile();
         }
 
-        private void WriteTempEnvFile(string content)
+        private static void WriteTempEnvFile(string content)
         {
             var envFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
             File.WriteAllText(envFilePath, content);
         }
 
-        private void DeleteTempEnvFile()
+        private static void DeleteTempEnvFile()
         {
             var envFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ".env");
             if (File.Exists(envFilePath))

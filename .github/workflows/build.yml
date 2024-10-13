@@ -54,7 +54,7 @@ jobs:
         shell: powershell
         run: |
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"tiglate_Curupira" /o:"ampliar-project" /d:sonar.scanner.scanAll=false /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" d:sonar.cs.dotcover.reportsPaths=code-coverage/dotCover.Output.html
-          msbuild Curupira.sln -property:Configuration=Release -property:Platform="Any CPU" /t:Rebuild
+          msbuild Curupira.sln -property:Configuration=Release -property:Platform="Any CPU"
           cd code-coverage
           .\run-dotCover.ps1 HTML Release
           cd ..

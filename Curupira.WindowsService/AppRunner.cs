@@ -54,9 +54,8 @@ namespace Curupira.WindowsService
             }
         }
 
-        public static void SetEnvironmentVariablesInDevMode(string[] commandLineArgs)
+        public static void SetEnvironmentVariables(string[] commandLineArgs)
         {
-#if DEBUG
             if (commandLineArgs.Length > 1 && commandLineArgs[0] == "--api-key")
             {
                 Environment.SetEnvironmentVariable("API_KEY", commandLineArgs[1]);
@@ -75,7 +74,6 @@ namespace Curupira.WindowsService
                     Environment.SetEnvironmentVariable(pair.Key, pair.Value);
                 }
             }
-#endif
         }
     }
 }
