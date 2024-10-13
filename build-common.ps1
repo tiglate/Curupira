@@ -2,7 +2,8 @@
 function Main {
     param (
         [string]$target = "package",  # Default target is 'package'
-        [string]$projFile
+        [string]$projFile,
+        [string]$releaseDir
     )
 	
 	if ([string]::IsNullOrEmpty($target)) {
@@ -11,7 +12,7 @@ function Main {
 
     switch ($target) {
         "package" {
-            Package $projFile
+            Package $projFile $releaseDir
         }
         "build" {
             Build $projFile
@@ -35,28 +36,33 @@ function Main {
     }
 }
 
-# Package target: Build and package the application
+# Override the Package function to include distribution steps
 function Package {
     param (
-        [string]$projFile
+        [string]$projFile,
+        [string]$releaseDir
     )
 
-    # Find the msbuild.exe path
-    $msbuildPath = Find-MSBuild
-    if (-not $msbuildPath) {
-        Write-Host "MSBuild not found. Exiting script."
-        exit 1
-    }
+    Build $projFile "Release"
 
-    # Execute the msbuild command for Build-Release
-    Execute-MSBuild $msbuildPath "Build-Release" $projFile
+    # Create the distribution folders
+    $distPath = Join-Path (Get-ScriptDirectory) "dist"
+    Create-DistFolders $distPath
+
+    # Copy necessary files to the distribution folder
+    Copy-FilesToDist $distPath $releaseDir
 }
 
-# Build target: Build the application in Debug mode
+# Build target: Build the application (in Debug mode by default)
 function Build {
     param (
-        [string]$projFile
+        [string]$projFile,
+        [string]$config = "Debug"
     )
+
+	if ([string]::IsNullOrEmpty($config)) {
+		$config = "Debug"
+	}
 
     # Find the msbuild.exe path
     $msbuildPath = Find-MSBuild
@@ -66,7 +72,7 @@ function Build {
     }
 
     # Execute the msbuild command for Build-Debug
-    Execute-MSBuild $msbuildPath "Build-Debug" $projFile
+    Execute-MSBuild $msbuildPath "Build-$config" $projFile
 }
 
 # Test target: Run unit tests using vstest.console.exe
@@ -149,7 +155,52 @@ function Execute-MSBuild {
     }
 }
 
+# Create the distribution folders
+function Create-DistFolders {
+    param (
+        [string]$distPath
+    )
+
+    $folders = @("bin", "conf", "lib", "logs")
+    foreach ($folder in $folders) {
+        $folderPath = Join-Path $distPath $folder
+        if (-not (Test-Path $folderPath)) {
+            New-Item -Path $folderPath -ItemType Directory | Out-Null
+        }
+    }
+
+    Write-Host "Distribution folders created at: $distPath"
+}
+
+# Copy necessary files to the dist folder
+function Copy-FilesToDist {
+    param (
+        [string]$distPath,
+        [string]$releaseDir
+    )
+
+    $releasePath = Join-Path (Get-ScriptDirectory) $releaseDir
+    $solutionPath = Get-ScriptDirectory
+
+    # Copy .dll files to dist\lib
+    Copy-Item -Path "$releasePath\*.dll" -Destination (Join-Path $distPath "lib") -Force
+
+    # Copy .exe files to dist\bin
+    Copy-Item -Path "$releasePath\*.exe" -Destination (Join-Path $distPath "bin") -Force
+
+    # Copy *.config to dist\conf
+    Copy-Item -Path "$releasePath\*.config" -Destination (Join-Path $distPath "conf") -Force
+
+    # Copy Config\*.* to dist\conf
+    Copy-Item -Path (Join-Path $releasePath "Config\*.*") -Destination (Join-Path $distPath "conf") -Force
+
+    # Copy LICENSE.txt to dist
+    Copy-Item -Path (Join-Path $solutionPath "LICENSE.txt") -Destination $distPath -Force
+
+    Write-Host "Files copied to distribution folder."
+}
+
 # Get the directory where the script is located
 function Get-ScriptDirectory {
-    return (Get-Location).Path
+    return $PSScriptRoot
 }

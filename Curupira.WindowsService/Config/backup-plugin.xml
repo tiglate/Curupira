@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<plugin xmlns="http://ampliar.dev.br/projects/curupira/plugin/backup-plugin"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://ampliar.dev.br/projects/curupira/plugin/backup-plugin backup-plugin.xsd">
+    <settings destination="c:\temp" limit="3" />
+    <backups>
+        <backup id="ruby" root="C:\Ruby">
+            <remove>bin</remove>
+            <remove>etc</remove>
+            <remove>include\</remove>
+            <remove>lib\</remove>
+            <remove>msys64</remove>
+            <remove>packages\*</remove>
+            <remove>**\*.html</remove>
+            <remove>LICENSE.txt</remove>
+        </backup>
+        <backup id="dell" root="C:\Dell\Drivers\HFVP5\EULA" destination="P:\temp">
+        </backup>
+        <backup id="xampp" root="C:\xampp\cgi-bin">
+            <remove>*.pl</remove>
+        </backup>
+        <backup id="tomcat" root="C:\tomcat" />
+    </backups>
+</plugin>

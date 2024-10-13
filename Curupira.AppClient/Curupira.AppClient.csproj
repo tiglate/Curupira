@@ -114,6 +114,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppConfigurationHelper.cs" />
     <Compile Include="AppRunner.cs" />
     <Compile Include="Services\AutofacHelper.cs" />
     <Compile Include="Services\ConsoleService.cs" />

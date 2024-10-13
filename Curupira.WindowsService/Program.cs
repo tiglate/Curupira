@@ -9,16 +9,35 @@ namespace Curupira.WindowsService
     [ExcludeFromCodeCoverage]
     static class Program
     {
-        static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+        static Program()
+        {
+#if !DEBUG
+            System.AppDomain.CurrentDomain.AssemblyResolve += AppConfigurationHelper.ResolveAssemblyFromLibFolder;
+#endif
+        }
 
         public static void Main(string[] args)
         {
+#if !DEBUG
+            // Load config files and set up assembly resolution only in release mode
+            AppConfigurationHelper.ConfigureAppSettings("CurupiraService.exe.config");
+            AppConfigurationHelper.ConfigureNLog();
+#endif
+
             AppRunner.SetEnvironmentVariables(args);
+
+            var logger = LogManager.GetCurrentClassLogger();
+
+            if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("API_KEY")))
+            {
+                logger.Error("API_KEY environment variable is not set.");
+                return;
+            }
 
             if (Environment.UserInteractive)
             {
                 // Run in console mode
-                StartAsConsoleApp();
+                StartAsConsoleApp(logger);
             }
             else
             {
@@ -27,11 +46,11 @@ namespace Curupira.WindowsService
             }
         }
 
-        private static void StartAsConsoleApp()
+        private static void StartAsConsoleApp(Logger logger)
         {
             try
             {
-                using (var runner = new AppRunner(_logger))
+                using (var runner = new AppRunner(logger))
                 {
                     runner.StartServer();
                     Console.WriteLine("Press [Enter] to stop the server...");
@@ -41,7 +60,7 @@ namespace Curupira.WindowsService
             }
             catch (Exception ex)
             {
-                _logger.Error(ex, "An error occurred while running the server in console mode.");
+                logger.Error(ex, "An error occurred while running the server in console mode.");
             }
         }
     }

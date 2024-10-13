@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<plugin xmlns="http://ampliar.dev.br/projects/curupira/plugin/service-manager-plugin"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://ampliar.dev.br/projects/curupira/plugin/service-manager-plugin service-manager-plugin.xsd">
+    <bundles>
+        <bundle id="stop_all">
+            <service name="WSearch" action="Stop" />
+            <service name="wuauserv" action="Stop" />
+        </bundle>
+        <bundle id="start_all">
+            <service name="WSearch" action="Start" />
+            <service name="wuauserv" action="Start" />
+        </bundle>
+        <bundle id="status_test" logFile="c:\temp\{0:yyyy-MM-dd}-services.txt">
+            <service name="VSSERV" action="Status" />
+            <service name="W32Time" action="Status" />
+            <service name="WaaSMedicSvc" action="Status" />
+        </bundle>
+    </bundles>
+</plugin>
