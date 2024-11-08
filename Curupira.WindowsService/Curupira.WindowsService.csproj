@@ -178,12 +178,6 @@
     <Compile Include="Model\ServiceModel.cs" />
     <Compile Include="Model\SystemUsageModel.cs" />
     <Compile Include="Model\TaskModel.cs" />
-    <Compile Include="ProjectInstaller.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="ProjectInstaller.Designer.cs">
-      <DependentUpon>ProjectInstaller.cs</DependentUpon>
-    </Compile>
     <Compile Include="Services\EventLogService.cs" />
     <Compile Include="Services\FileUploadService.cs" />
     <Compile Include="Services\IEventLogService.cs" />
@@ -232,6 +226,9 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Install.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="NLog.Release.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -239,11 +236,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
+    <None Include="Uninstall.bat">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="ProjectInstaller.resx">
-      <DependentUpon>ProjectInstaller.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="WindowsService\ControlService.resx">
       <DependentUpon>ControlService.cs</DependentUpon>
     </EmbeddedResource>
@@ -294,16 +291,16 @@
     </Content>
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-      <None Update="NLog.Debug.config">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <TargetPath>NLog.config</TargetPath>
-      </None>
+    <None Update="NLog.Debug.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>NLog.config</TargetPath>
+    </None>
   </ItemGroup>
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-      <None Update="NLog.Release.config">
-          <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-          <TargetPath>NLog.config</TargetPath>
-      </None>
+    <None Update="NLog.Release.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <TargetPath>NLog.config</TargetPath>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

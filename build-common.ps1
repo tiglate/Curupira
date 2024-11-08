@@ -1,5 +1,5 @@
-# Define the main function
-function Main {
+# This is the main function of the script
+function Execute {
     param (
         [string]$target = "package",  # Default target is 'package'
         [string]$projFile,
@@ -187,6 +187,9 @@ function Copy-FilesToDist {
 
     # Copy .exe files to dist\bin
     Copy-Item -Path "$releasePath\*.exe" -Destination (Join-Path $distPath "bin") -Force
+
+    # Copy .bat files to dist\bin
+    Copy-Item -Path "$releasePath\*.bat" -Destination (Join-Path $distPath "bin") -Force
 
     # Copy *.config to dist\conf
     Copy-Item -Path "$releasePath\*.config" -Destination (Join-Path $distPath "conf") -Force
